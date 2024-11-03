@@ -1,0 +1,36 @@
+name: TelegramLogger
+version: '2.0.0'
+main: uz.lazizbekdev.telegramlogger.TelegramLogger
+api-version: '1.13'
+author: LazizbekDev
+description: Forward Minecraft server events to Telegram
+website: https://t.me/LazizbekDev
+
+commands:
+  telegramlogger:
+    description: Main command for TelegramLogger
+    usage: |-
+      §6§lTelegramLogger §7➜ §cError! Use these commands:
+      §e/telegramlogger reload §7- §fReload the plugin
+      §e/telegramlogger start §7- §fStart message forwarding
+      §e/telegramlogger stop §7- §fStop message forwarding
+      §e/telegramlogger stats §7- §fView message statistics
+      §e/telegramlogger debug §7- §fToggle debug mode
+      §e/telegramlogger status §7- §fShow plugin status
+      §e/telegramlogger admin add <id> <name> §7- §fAdd new admin
+      §e/telegramlogger admin remove <id> §7- §fRemove admin
+      §e/telegramlogger admin list §7- §fList all admins
+      §e/telegramlogger help §7- §fShow help message
+    aliases: [tl, tlog]
+    permission: telegramlogger.admin
+    permission-message: §6§lTelegramLogger §7➜ §c§l❌ You don’t have permission to use this command!
+
+permissions:
+  telegramlogger.admin:
+    description: Allows full access to all TelegramLogger commands
+    default: op
+
+softdepend: [] # Plugin doesn't require any other plugins
+
+# Load STARTUP to ensure plugin is ready before players join
+load: STARTUP
