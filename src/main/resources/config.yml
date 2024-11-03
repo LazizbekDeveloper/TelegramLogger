@@ -1,0 +1,73 @@
+# ===========================================
+#        TelegramLogger Configuration
+#        Developer by LazizbekDev
+#        Telegram: https://t.me/LazizbekDev
+# ===========================================
+
+# Bot Configuration
+# -------------------------------------------
+bot_token: "BOT_TOKEN"  # Your Telegram bot token
+chat_id: "CHAT_ID"    # Your Telegram chat ID
+thread_id: "THREAD_ID"  # Thread ID (for forum topics)
+send_to_thread: false
+send_telegram_messages_to_game: true
+
+# Message Prefix
+# -------------------------------------------
+plugin_prefix: "&6&lTelegramLogger&7 ➜ &r&a"
+telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"
+# Available placeholders: %name%, %message%
+
+# Join Messages
+# -------------------------------------------
+enable_join: true
+join_message: "<blockquote>ㅤㅤㅤㅤㅤ\n ➕ <b><u>%player%</u></b> joined the game! (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+# Available placeholders: %player%, %displayname%, %online%, %max%
+
+# Leave Messages
+# -------------------------------------------
+enable_leave: true
+leave_message: "<blockquote>ㅤㅤㅤㅤㅤ\n ➖ <b><u>%player%</u></b> left the game! (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+# Available placeholders: %player%, %displayname%, %online%, %max%
+
+# Chat Messages
+# -------------------------------------------
+enable_chat: true
+chat_message: "<b><u>%player%</u></b> <b>➥</b> %message%"
+# Available placeholders: %player%, %displayname%, %message%, %online%, %max%
+
+# Advancement Messages
+# -------------------------------------------
+enable_advancement: true
+advancement_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 🏆 <b><u>%player%</u></b> made the advancement <u>[%advancement%]</u> (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+# Available placeholders: %player%, %displayname%, %advancement%, %online%, %max%
+
+# Death Messages
+# -------------------------------------------
+enable_death: true
+death_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 💀 <b><u>%player%</u></b> death: %death_message% (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+# Available placeholders: %player%, %displayname%, %death_message%, %online%, %max%
+
+# World Switch Messages
+# -------------------------------------------
+enable_world_switch: true
+world_switch_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 🌍 <b><u>%player%</u></b> moved from <u>%from_world%</u> to <u>%to_world%</u> (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+# Available placeholders: %player%, %displayname%, %from_world%, %to_world%, %online%, %max%
+
+# Chat Filter
+# -------------------------------------------
+enable_chat_filter: true
+filtered_words:
+  - "badword1"
+  - "badword2"
+filtered_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 🚫 <b><u>%player%</u></b> used a filtered word. (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+# Available placeholders: %player%, %displayname%, %online%, %max%
+
+# Debug Mode (Advanced users only)
+# -------------------------------------------
+debug_mode: false
+
+# Plugin Version (DO NOT EDIT)
+# -------------------------------------------
+version: "1.0"
+
