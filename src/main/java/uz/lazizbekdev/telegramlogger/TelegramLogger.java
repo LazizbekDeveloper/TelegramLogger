@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  */
 public class TelegramLogger extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
-    private static final String PLUGIN_VERSION = "1.0";
+    private static final String PLUGIN_VERSION = "1.0.1";
     
     // Bot & Chat Settings
     private String botToken;

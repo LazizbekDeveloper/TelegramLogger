@@ -1,5 +1,5 @@
 name: TelegramLogger
-version: '1.0'
+version: '1.0.1'
 main: uz.lazizbekdev.telegramlogger.TelegramLogger
 api-version: '1.13'
 author: LazizbekDev
