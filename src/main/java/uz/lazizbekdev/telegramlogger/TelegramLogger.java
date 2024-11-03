@@ -1175,9 +1175,10 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 }
     
             } catch (Exception e) {
-                broadcastPluginMessage("&c&l❌ Error sending message to Telegram: &e" + e.getMessage());
+                
                 if (debugMode) {
                     e.printStackTrace();
+                    broadcastPluginMessage("&c&l❌ Error sending message to Telegram: &e" + e.getMessage());
                 }
             }
         });
@@ -2072,7 +2073,7 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 
                 broadcastPluginMessage("&a&l⚡ Plugin has been reloaded successfully!");
                 logDebug("&a&l⚡ Reloaded by &f" + sender.getName(), true);
-                sendToTelegram("🔄 Plugin has been reloaded by " + sender.getName());
+                //sendToTelegram("🔄 Plugin has been reloaded by " + sender.getName());
             } else {
                 isPluginActive = false;
                 isBotActive = false;
@@ -2098,7 +2099,7 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 logDebug("&a&l⚡ Plugin activated by: &f" + sender.getName(), false);
             }
             broadcastPluginMessage("&a&l⚡ Messaging has been started!");
-            sendToTelegram("✅ Messaging has been started by " + sender.getName() + "!");
+            //sendToTelegram("✅ Messaging has been started by " + sender.getName() + "!");
         } else {
             sender.sendMessage(colorize(pluginPrefix + "&c&l❌ Messaging is already active!"));
         }
@@ -2114,7 +2115,7 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 logDebug("&c&l⚡ Plugin deactivated by: &f" + sender.getName(), false);
             }
             broadcastPluginMessage("&c&l⚡ Messaging has been stopped!");
-            sendToTelegram("🛑 Messaging has been stopped by " + sender.getName() + "!");
+            //sendToTelegram("🛑 Messaging has been stopped by " + sender.getName() + "!");
         } else {
             sender.sendMessage(colorize(pluginPrefix + "&c&l❌ Messaging is already inactive!"));
         }
@@ -2146,9 +2147,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
         Arrays.stream(status.split("\n"))
             .forEach(line -> sender.sendMessage(colorize(pluginPrefix + line)));
         
-        if (sender instanceof Player) {
-            sendToTelegram("📊 Status checked by " + sender.getName());
-        }
         
         if (debugMode) {
             logDebug("&a&l⚡ Status checked by: &f" + sender.getName(), false);
@@ -2243,7 +2241,7 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
     
             // Broadcast messages
             broadcastPluginMessage("&a&l👑 New admin &e" + name + " &aadded successfully!");
-            sendToTelegram("👑 <b>" + name + "</b> has been added as an admin by " + sender.getName());
+            //sendToTelegram("👑 <b>" + name + "</b> has been added as an admin by " + sender.getName());
     
         } catch (NumberFormatException e) {
             sender.sendMessage(colorize(pluginPrefix + 
@@ -2280,7 +2278,7 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
     
             // Broadcast messages
             broadcastPluginMessage("&c&l👑 Admin &e" + adminName + " &cremoved successfully!");
-            sendToTelegram("👑 <b>" + adminName + "</b> has been removed from admins by " + sender.getName());
+            //sendToTelegram("👑 <b>" + adminName + "</b> has been removed from admins by " + sender.getName());
         }
     }
     
