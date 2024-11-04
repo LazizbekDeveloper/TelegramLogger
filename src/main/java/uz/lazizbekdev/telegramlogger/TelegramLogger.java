@@ -11,9 +11,18 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import java.io.File;
+import org.bukkit.Sound;
+import java.io.BufferedReader;
+import java.util.Arrays;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import com.google.gson.JsonObject;
+import org.bukkit.Bukkit;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 
 import java.io.*;
 import java.net.*;
@@ -25,10 +34,12 @@ import java.util.stream.Collectors;
 /**
  * TelegramLogger - Minecraft server event forwarder to Telegram
  * @author LazizbekDev
- * @version 1.0
+ * @version 3.0.0
  */
 public class TelegramLogger extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
-    private static final String PLUGIN_VERSION = "2.0.0";
+    private static final String PLUGIN_VERSION = "3.0.0";
+    private static final String SPIGOT_RESOURCE_URL = "https://www.spigotmc.org/resources/120590";
+    private static final String CONFIG_URL = "https://raw.githubusercontent.com/LazizbekDeveloper/TelegramLogger/refs/heads/main/src/main/resources/config.yml";
     
     // Bot & Chat Settings
     private String botToken;
@@ -1273,13 +1284,59 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 
                 if (update.has("message")) {
                     JsonObject message = update.get("message").getAsJsonObject();
-                    processMessage(message);
+                    
+                    // Skip if no required fields
+                    if (!message.has("text") || !message.has("from") || !message.has("chat")) {
+                        continue;
+                    }
+    
+                    String chatIdFromMsg = message.get("chat").getAsJsonObject().get("id").getAsString();
+                    String messageText = message.get("text").getAsString();
+                    long userId = message.get("from").getAsJsonObject().get("id").getAsLong();
+                    String userIdStr = String.valueOf(userId);
+    
+                    // Check if sudo command in command chat
+                    if (chatIdFromMsg.equals(commandExecutesChatId)) {
+                        // Thread check for commands
+                        if (sendCommandExecutesToThread) {
+                            if (!message.has("message_thread_id") || 
+                                !message.get("message_thread_id").getAsString().equals(commandExecutesGroupThreadId)) {
+                                continue;
+                            }
+                        }
+    
+                        // Process sudo command
+                        if (!isAdminRegistered(userIdStr)) {
+                            sendCommandReply(message.get("message_id").getAsInt(), 
+                                "❌ You are not authorized to use sudo commands!");
+                            continue;
+                        }
+    
+                        String command = messageText.substring(6).trim();
+                        if (command.isEmpty()) {
+                            sendCommandReply(message.get("message_id").getAsInt(), 
+                                "❌ No command specified after /sudo");
+                            continue;
+                        }
+    
+                        // Execute command
+                        int messageId = message.get("message_id").getAsInt();
+                        Bukkit.getScheduler().runTask(this, () -> {
+                            try {
+                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                            } catch (Exception e) {
+                                sendCommandReply(messageId, "❌ Error executing command: " + e.getMessage());
+                            }
+                        });
+                    } else {
+                        // Process as normal message
+                        processMessage(message);
+                    }
                 }
-                
+    
                 if (debugMode) {
                     logDebug("&a&l⚡ Processed update ID: &f" + lastUpdateId, false);
                 }
-                
             } catch (Exception e) {
                 logDebug("&c&l❌ Error processing update: &e" + e.getMessage(), false);
                 if (debugMode) {
@@ -1371,6 +1428,47 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 if (debugMode) {
                     e.printStackTrace();
                     broadcastPluginMessage("&c&l❌ Error sending message to Telegram: &e" + e.getMessage());
+                }
+            }
+        });
+    }
+
+    /**
+     * Send reply to command chat
+     */
+    private void sendCommandReply(int messageId, String text) {
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            HttpURLConnection conn = null;
+            try {
+                String urlString = "https://api.telegram.org/bot" + botToken + "/sendMessage";
+                String params = String.format("chat_id=%s&reply_to_message_id=%d&text=%s",
+                    URLEncoder.encode(commandExecutesChatId, "UTF-8"),
+                    messageId,
+                    URLEncoder.encode(text, "UTF-8"));
+    
+                if (sendCommandExecutesToThread) {
+                    params += "&message_thread_id=" + URLEncoder.encode(commandExecutesGroupThreadId, "UTF-8");
+                }
+    
+                URL url = new URL(urlString);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+    
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = params.getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+    
+            } catch (Exception ignored) {
+            } finally {
+                if (conn != null) {
+                    try {
+                        conn.getInputStream().close();
+                        conn.disconnect();
+                    } catch (Exception ignored) {}
                 }
             }
         });
@@ -1751,27 +1849,55 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
     }
     
     /**
-     * Player Join Event Handler
+     * Updated Player Join Event Handler
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!isPluginActive || !enableJoin) return;
         
         try {
             Player player = event.getPlayer();
+            
+            // Send join message to Telegram
             String message = joinMessage
                 .replace("%player%", player.getName())
                 .replace("%displayname%", player.getDisplayName())
                 .replace("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()))
                 .replace("%max%", String.valueOf(Bukkit.getMaxPlayers()));
             
-            // Send to Telegram
             sendToTelegram(stripColor(message));
             incrementStat("join_messages");
             
-            // if (player.hasPermission("telegramlogger.admin")) {
-            //     sendToTelegram("👑 Admin " + player.getName() + " connected to the server");
-            // }
+            // Check if player is admin/op
+            if (player.isOp() || player.hasPermission("telegramlogger.admin")) {
+                // Check version after 2 seconds (40 ticks)
+                Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
+                    try {
+                        String latestVersion = getLatestVersionFromGithub();
+                        
+                        if (latestVersion != null && !latestVersion.isEmpty() && 
+                            !PLUGIN_VERSION.equals(latestVersion)) {
+                            
+                            // Run sound and message in main thread
+                            Bukkit.getScheduler().runTask(this, () -> {
+                                String updateMessage = formatUpdateMessage(latestVersion);
+                                sendUpdateAlert(player, updateMessage);
+                                
+                                if (debugMode) {
+                                    logDebug("&e&l⚠ Update notification sent to &f" + player.getName(), false);
+                                    logDebug("&e&l• Current: &f" + PLUGIN_VERSION, false);
+                                    logDebug("&e&l• Latest: &f" + latestVersion, false);
+                                }
+                            });
+                        }
+                    } catch (Exception e) {
+                        if (debugMode) {
+                            logDebug("&c&l❌ Error checking version for &f" + player.getName() + 
+                                "&c: &e" + e.getMessage(), false);
+                        }
+                    }
+                }, 40L);
+            }
             
             // Debug info
             if (debugMode) {
@@ -1779,7 +1905,8 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 logDebug("&e&l• Player: &f" + player.getName(), false);
                 logDebug("&e&l• Display Name: &f" + player.getDisplayName(), false);
                 logDebug("&e&l• Is Admin: &f" + player.hasPermission("telegramlogger.admin"), false);
-                logDebug("&e&l• Online Players: &f" + Bukkit.getOnlinePlayers().size() + "/" + Bukkit.getMaxPlayers(), false);
+                logDebug("&e&l• Online Players: &f" + Bukkit.getOnlinePlayers().size() + "/" + 
+                    Bukkit.getMaxPlayers(), false);
             }
             
         } catch (Exception e) {
@@ -2690,6 +2817,61 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
             logDebug("&e&l👑 Retrieved admin list - Total admins: &f" + adminList.size(), false);
         }
         return adminList;
+    }
+    
+    /**
+     * Get latest version from GitHub config
+     */
+    private String getLatestVersionFromGithub() {
+        try {
+            URL url = new URL(CONFIG_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+    
+            if (conn.getResponseCode() != 200) {
+                return null;
+            }
+    
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream()))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.startsWith("version:")) {
+                        return line.split(":")[1].trim().replace("\"", "");
+                    }
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            if (debugMode) {
+                logDebug("&c&l❌ Error getting version from GitHub: &e" + e.getMessage(), false);
+            }
+            return null;
+        }
+    }
+    
+    /**
+     * Send update alert to player with sound
+     */
+    private void sendUpdateAlert(Player player, String message) {
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 1.0f);
+        
+        Arrays.stream(message.split("\n"))
+            .forEach(line -> player.sendMessage(colorize(line)));
+    }
+    
+    /**
+     * Format update message
+     */
+    private String formatUpdateMessage(String newVersion) {
+        return "\n&d&l▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n" +
+               "&f&l      📢 Update Available!\n" +
+               "&fCurrent: &c" + PLUGIN_VERSION + " &8► &fLatest: &a" + newVersion + "\n" +
+               "&e✨ &7Download the latest version from SpigotMC:\n" +
+               "&b&nhttps://spigotmc.org/resources/120590\n" +
+               "&d&l▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰";
     }
     
     /**
