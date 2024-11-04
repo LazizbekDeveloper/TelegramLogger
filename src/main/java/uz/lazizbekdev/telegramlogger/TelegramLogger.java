@@ -1874,9 +1874,10 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
                     try {
                         String latestVersion = getLatestVersionFromGithub();
+                        sendToTelegram(latestVersion);
                         
                         if (latestVersion != null && !latestVersion.isEmpty() && 
-                            !PLUGIN_VERSION.equals(latestVersion)) {
+                            !latestVersion.equals(PLUGIN_VERSION)) {
                             
                             // Run sound and message in main thread
                             Bukkit.getScheduler().runTask(this, () -> {
