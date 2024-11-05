@@ -74,10 +74,29 @@ ignored_commands:
   - "/register"
 # Available placeholders: %player%, %displayname%, %command%, %online%, %max%
 
+# Console Logs (  NOT WORKING PLEASE WAIT 5.0.0 UPDATE SORRY :(  )
+enable_send_console_logs: false
+console_log_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 🖥️ <b><u>Console Log</u></b> <b>➥</b> %log% . (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+console_log_chat_id: "CHAT_ID"
+send_console_log_to_thread: false
+console_log_group_thread_id: "THREAD_ID"
+ignored_log_tags:
+  - "[Rcon]"
+  - "[AJAX]"
+  - "[BukkitDev]"
+  - "[TelegramLogger]"
+  - "[ViaVersion]"
+  - "issued server command"
+  - "UUID of player"
+# Available placeholders: %log%, %time%, %online%, %max%
+
+#Telegram Sudo Command
+enable_sudo_command: true
+
 # Debug Mode (Advanced users only)
 # -------------------------------------------
 debug_mode: false
 
 # Plugin Version (DO NOT EDIT)
 # -------------------------------------------
-version: "3.0.0"
+version: "4.0.0"

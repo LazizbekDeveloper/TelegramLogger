@@ -1,10 +1,11 @@
 name: TelegramLogger
-version: '3.0.0'
+prefix: TelegramLogger
+version: '4.0.0'
 main: uz.lazizbekdev.telegramlogger.TelegramLogger
-api-version: '1.13'
+api-version: '1.16'
 author: LazizbekDev
-description: Forward Minecraft server events to Telegram
-website: https://t.me/LazizbekDev
+description: Connect your Minecraft server with Telegram! Monitor all server activities in real-time through your Telegram group or channel.
+website: https://lazizbekdev.uz
 
 commands:
   telegramlogger:
@@ -30,7 +31,7 @@ permissions:
     description: Allows full access to all TelegramLogger commands
     default: op
 
-softdepend: [] # Plugin doesn't require any other plugins
+softdepend: []
 
-# Load STARTUP to ensure plugin is ready before players join
+loadbefore: [Skript, Minepacks, GriefPrevention, AntiWorldDownloader, ItemEdit, Skript]
 load: STARTUP

@@ -6,11 +6,11 @@
 
     <groupId>uz.lazizbekdev</groupId>
     <artifactId>TelegramLogger</artifactId>
-    <version>3.0.0</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <name>TelegramLogger</name>
-    <description>Forward Minecraft server events to Telegram</description>
+    <description>Connect your Minecraft server with Telegram! Monitor all server activities in real-time through your Telegram group or channel.</description>
 
     <properties>
         <java.version>1.8</java.version>
