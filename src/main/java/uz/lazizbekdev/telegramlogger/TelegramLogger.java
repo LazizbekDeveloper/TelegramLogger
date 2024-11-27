@@ -54,7 +54,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
     private boolean isPluginActive = false;
     private boolean debugMode = false;
     private long lastUpdateId = 0;
-    private LogReader logReader; 
 
     // Message Templates
     private String joinMessage;
@@ -81,7 +80,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
     private boolean enableSendCommandExecutes;
     private boolean sendCommandExecutesToThread;
     private boolean enableTelegramSudoCommand;
-    private boolean enableSendConsoleLogs;
     private List<String> filteredWords;
     private List<String> ignoredCommands;
 
@@ -125,189 +123,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
     }
 
     /**
-    * Log Reader class for reading and processing server logs
-    * Reads logs from latest.log and sends them to Telegram
-    */
-    private class LogReader {
-       private long lastLogPosition = 0;
-       private final List<String> ignoredTags;
-       private final Queue<String> messageQueue = new LinkedList<>();
-    
-       /**
-        * Constructor - Initializes ignored tags from config
-        */
-       public LogReader() {
-           // Load and convert ignored tags to lowercase
-           ignoredTags = getConfig().getStringList("ignored_log_tags").stream()
-                   .map(String::toLowerCase)
-                   .collect(Collectors.toList());
-    
-           if (debugMode) {
-               logDebug("&a&l⚡ LogReader created with " + ignoredTags.size() + " ignored tags", false);
-           }
-    
-           // Start message sender task
-           new BukkitRunnable() {
-               @Override
-               public void run() {
-                   if (!messageQueue.isEmpty()) {
-                       String message = messageQueue.poll();
-                       if (message != null) {
-                           sendConsoleLogToTelegram(message);
-                           try {
-                               Thread.sleep(500); // Wait 500ms between messages
-                           } catch (InterruptedException e) {
-                               if (debugMode) {
-                                   logDebug("&c&l❌ Sleep interrupted", false);
-                               }
-                           }
-                       }
-                   }
-               }
-           }.runTaskTimerAsynchronously(TelegramLogger.this, 10L, 10L);
-       }
-    
-       /**
-        * Starts the log reading task
-        * Runs every second asynchronously
-        */
-       public void start() {
-           if (!enableSendConsoleLogs) {
-               if (debugMode) {
-                   logDebug("&c&l❌ Console logs are disabled in config", false);
-               }
-               return;
-           }
-    
-           if (debugMode) {
-               logDebug("&a&l⚡ Starting log reader task", false);
-           }
-    
-           new BukkitRunnable() {
-               @Override
-               public void run() {
-                   try {
-                       File logFile = new File("logs/latest.log");
-                       if (!logFile.exists()) {
-                           if (debugMode) {
-                               logDebug("&c&l❌ Log file not found", false);
-                           }
-                           return;
-                       }
-    
-                       try (RandomAccessFile raf = new RandomAccessFile(logFile, "r")) {
-                           // First run - go to end of file
-                           if (lastLogPosition == 0) {
-                               lastLogPosition = logFile.length();
-                               if (debugMode) {
-                                   logDebug("&e&l⚠ First run, setting position to: " + lastLogPosition, false);
-                               }
-                               return;
-                           }
-    
-                           // If file size decreased (new day/restart)
-                           if (logFile.length() < lastLogPosition) {
-                               lastLogPosition = 0;
-                               if (debugMode) {
-                                   logDebug("&e&l⚠ File size decreased, resetting position", false);
-                               }
-                               return;
-                           }
-    
-                           // Read from last position
-                           raf.seek(lastLogPosition);
-                           String line;
-                           int processedLines = 0;
-    
-                           // Process new lines
-                           while ((line = raf.readLine()) != null) {
-                               String utf8Line = new String(line.getBytes("ISO-8859-1"), "UTF-8");
-                               processLogLine(utf8Line);
-                               processedLines++;
-                           }
-    
-                           // Save last position
-                           lastLogPosition = raf.getFilePointer();
-    
-                           if (debugMode && processedLines > 0) {
-                               logDebug("&a&l⚡ Processed " + processedLines + " new log lines", false);
-                           }
-                       }
-                   } catch (Exception e) {
-                       if (debugMode) {
-                           logDebug("&c&l❌ Error reading logs: " + e.getMessage(), false);
-                           e.printStackTrace();
-                       }
-                   }
-               }
-           }.runTaskTimerAsynchronously(TelegramLogger.this, 20L, 20L);
-       }
-    
-       /**
-        * Process each log line
-        * Filters unwanted logs and adds to queue
-        * @param line The log line to process
-        */
-       private void processLogLine(String line) {
-           try {
-               // Skip empty lines
-               if (line == null || line.trim().isEmpty()) {
-                   return;
-               }
-    
-               // Skip our plugin messages
-               if (line.contains(pluginPrefix)) {
-                   return;
-               }
-    
-               // Skip stack traces
-               if (line.startsWith("\tat ")) {
-                   return;
-               }
-    
-               // Remove timestamp prefix [HH:mm:ss]
-               String cleanedLog = line;
-               if (line.startsWith("[") && line.length() > 10) {
-                   cleanedLog = line.substring(10).trim();
-               }
-    
-               // Convert to lowercase for case-insensitive checks
-               String lowerCaseLog = cleanedLog.toLowerCase();
-    
-               // Check against ignored tags
-               for (String tag : ignoredTags) {
-                   if (lowerCaseLog.contains(tag)) {
-                       if (debugMode) {
-                           logDebug("&e&l⚠ Ignored log due to tag: &f" + tag + " in message: " + cleanedLog, false);
-                       }
-                       return;
-                   }
-               }
-    
-               // Format message with placeholders
-               String formattedMessage = getConfig().getString("console_log_message", "")
-                       .replace("%log%", cleanedLog)
-                       .replace("%time%", new SimpleDateFormat("HH:mm:ss").format(new Date()))
-                       .replace("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()))
-                       .replace("%max%", String.valueOf(Bukkit.getMaxPlayers()));
-    
-               if (debugMode) {
-                   logDebug("&a&l⚡ Adding to queue: " + cleanedLog, false);
-               }
-    
-               // Add to queue for sending
-               messageQueue.offer(formattedMessage);
-    
-           } catch (Exception e) {
-               if (debugMode) {
-                   logDebug("&c&l❌ Error processing line: " + e.getMessage(), false);
-                   e.printStackTrace();
-               }
-           }
-       }
-    }
-
-    /**
      * Plugin enable logic
      */
     @Override
@@ -326,8 +141,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
             
             if (checkBotToken()) {
                 startTelegramPolling();
-                logReader = new LogReader();
-                //logReader.start();
                 isBotActive = true;
                 isPluginActive = true;
                 broadcastAdminMessage("&a&l⚡ Plugin enabled with active bot connection!");
@@ -440,7 +253,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
         status.append("&e&l• World Switch: ").append(getToggleStatus(enableWorldSwitch)).append("\n");
         status.append("&e&l• Chat Filter: ").append(getToggleStatus(enableChatFilter)).append("\n");
         status.append("&e&l• Telegram Sudo: ").append(getToggleStatus(enableTelegramSudoCommand)).append("\n");
-        status.append("&e&l• Send Console Logs: ").append(getToggleStatus(enableSendConsoleLogs)).append("\n");
         
         status.append("\n&7&lServer Info:\n");
         status.append("&e&l• Version: &f").append(Bukkit.getVersion()).append("\n");
@@ -588,22 +400,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 config.set("command_executes_chat_id", "CHAT_ID");
                 config.set("send_command_executes_to_thread", false);
                 config.set("command_executes_group_thread_id", "THREAD_ID");
-                
-                // Send Console Logs
-                config.set("enable_send_console_logs", false);
-                config.set("console_log_message", "<blockquote>ㅤㅤㅤㅤㅤ\n 🖥️ <b><u>Console Log</u></b> <b>➥</b> %log% . (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>");
-                config.set("console_log_chat_id", "CHAT_ID");
-                config.set("send_console_log_to_thread", false);
-                config.set("console_log_group_thread_id", "THREAD_ID");
-                List<String> defaultIgnoredTags = new ArrayList<>();
-                defaultIgnoredTags.add("[Rcon]");
-                defaultIgnoredTags.add("[AJAX]");
-                defaultIgnoredTags.add("[BukkitDev]");
-                defaultIgnoredTags.add("[TelegramLogger]");
-                defaultIgnoredTags.add("[ViaVersion]");
-                defaultIgnoredTags.add("issued server command");
-                defaultIgnoredTags.add("UUID of player");
-                config.set("ignored_log_tags", defaultIgnoredTags);
 
                 
                 // Telegram Sudo
@@ -734,8 +530,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
             .map(String::toLowerCase)
             .collect(Collectors.toList());
             
-        enableSendConsoleLogs = config.getBoolean("enable_send_console_logs", false);
-        
         enableTelegramSudoCommand = config.getBoolean("enable_sudo_command", false);
         
         // Filter words
@@ -765,7 +559,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
         logDebug("&e&l• World Switch: &f" + enableWorldSwitch, false);
         logDebug("&e&l• Chat Filter: &f" + enableChatFilter, false);
         logDebug("&e&l• Telegram Sudo: &f" + enableTelegramSudoCommand, false);
-        logDebug("&e&l• Send Console Logs: &f" + enableSendConsoleLogs, false);
     
         // Chat Filter Words
         if (enableChatFilter && !filteredWords.isEmpty()) {
@@ -1081,13 +874,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
             config.set("ignored_commands", ignoredCommands);
             config.set("enable_sudo_command", enableTelegramSudoCommand);
             
-            // Console Logs settings
-            config.set("enable_send_console_logs", getConfig().getBoolean("enable_send_console_logs", false));
-            config.set("console_log_message", getConfig().getString("console_log_message", 
-                "<blockquote>ㅤㅤㅤㅤㅤ\n 🖥️ <b><u>Console Log</u></b> <b>➥</b> %log% . (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"));
-            config.set("console_log_chat_id", getConfig().getString("console_log_chat_id", "CHAT_ID"));
-            config.set("send_console_log_to_thread", getConfig().getBoolean("send_console_log_to_thread", false));
-            config.set("console_log_group_thread_id", getConfig().getString("console_log_group_thread_id", "THREAD_ID"));
             
             // Save config
             config.save(configFile);
@@ -1142,21 +928,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
             }
         }
         
-        if (getConfig().getBoolean("enable_send_console_logs", false)) {
-            String consoleLogChatId = getConfig().getString("console_log_chat_id", "");
-            if (consoleLogChatId.isEmpty() || consoleLogChatId.equals("CHAT_ID")) {
-                broadcastAdminMessage("&c&l❌ Console log chat ID is required when console logs are enabled!");
-                return false;
-            }
-            
-            if (getConfig().getBoolean("send_console_log_to_thread", false)) {
-                String threadId = getConfig().getString("console_log_group_thread_id", "");
-                if (threadId.isEmpty() || threadId.equals("THREAD_ID")) {
-                    broadcastAdminMessage("&c&l❌ Console log thread ID is required when using thread!");
-                    return false;
-                }
-            }
-        }
         
         return true;
     }
@@ -2369,59 +2140,6 @@ public class TelegramLogger extends JavaPlugin implements Listener, CommandExecu
                 }
             }
         });
-    }
-    
-    /**
-    * Send Console Logs To Telegram
-    */
-    private void sendConsoleLogToTelegram(String message) {
-        if (!isPluginActive) return;
-    
-        try {
-            String chatId = getConfig().getString("console_log_chat_id", "");
-            if (chatId.isEmpty() || chatId.equals("CHAT_ID")) {
-                if (debugMode) {
-                    logDebug("&c&l❌ Console log chat ID not configured!", false);
-                }
-                return;
-            }
-    
-            boolean sendToThread = getConfig().getBoolean("send_console_log_to_thread", false);
-            String threadId = getConfig().getString("console_log_group_thread_id", "");
-    
-            String urlString = "https://api.telegram.org/bot" + botToken + "/sendMessage";
-            String encodedMessage = URLEncoder.encode(message, StandardCharsets.UTF_8.toString());
-            
-            String params = String.format("chat_id=%s&text=%s&parse_mode=HTML&disable_web_page_preview=true%s",
-                URLEncoder.encode(chatId, "UTF-8"),
-                encodedMessage,
-                sendToThread && !threadId.isEmpty() ? "&message_thread_id=" + URLEncoder.encode(threadId, "UTF-8") : "");
-    
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-    
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = params.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-    
-            if (debugMode) {
-                int responseCode = conn.getResponseCode();
-                if (responseCode != 200) {
-                    String errorResponse = getErrorResponse(conn);
-                    logDebug("&c&l❌ Failed to send console log!", false);
-                    logDebug("&c&lResponse: &e" + errorResponse, false);
-                }
-            }
-    
-        } catch (Exception e) {
-            if (debugMode) {
-                logDebug("&c&l❌ Error sending console log: &e" + e.getMessage(), false);
-                e.printStackTrace();
-            }
-        }
     }
         
     /**
