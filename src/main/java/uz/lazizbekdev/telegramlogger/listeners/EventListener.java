@@ -220,10 +220,16 @@ public class EventListener implements Listener {
         if (suffix.isEmpty()) {
             suffix = MessageUtils.extractSuffix(player.getDisplayName(), player.getName());
         }
+
+        // Apply prefix_replacements: if a replacement matched, the value is
+        // trusted HTML from config (e.g. <tg-emoji>) so don't escape it.
+        // If no replacement matched, escape for safety.
+        String origPrefix = prefix;
+        String origSuffix = suffix;
         prefix = MessageUtils.applyPrefixReplacements(prefix, replacements);
         suffix = MessageUtils.applyPrefixReplacements(suffix, replacements);
-        ph.put("%prefix%", MessageUtils.escapeHtml(prefix));
-        ph.put("%suffix%", MessageUtils.escapeHtml(suffix));
+        ph.put("%prefix%", prefix.equals(origPrefix) ? MessageUtils.escapeHtml(prefix) : prefix);
+        ph.put("%suffix%", suffix.equals(origSuffix) ? MessageUtils.escapeHtml(suffix) : suffix);
 
         ph.put("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()));
         ph.put("%max%", String.valueOf(Bukkit.getMaxPlayers()));
