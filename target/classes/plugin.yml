@@ -1,6 +1,6 @@
 name: TelegramLogger
 prefix: TelegramLogger
-version: '4.0.0'
+version: '5.0.0'
 main: uz.lazizbekdev.telegramlogger.TelegramLogger
 api-version: '1.16'
 author: LazizbekDev
@@ -11,20 +11,20 @@ commands:
   telegramlogger:
     description: Main command for TelegramLogger
     usage: |-
-      §6§lTelegramLogger §7➜ §cError! Use these commands:
-      §e/telegramlogger reload §7- §fReload the plugin
-      §e/telegramlogger start §7- §fStart message forwarding
-      §e/telegramlogger stop §7- §fStop message forwarding
-      §e/telegramlogger stats §7- §fView message statistics
-      §e/telegramlogger debug §7- §fToggle debug mode
-      §e/telegramlogger status §7- §fShow plugin status
-      §e/telegramlogger admin add <id> <name> §7- §fAdd new admin
-      §e/telegramlogger admin remove <id> §7- §fRemove admin
-      §e/telegramlogger admin list §7- §fList all admins
-      §e/telegramlogger help §7- §fShow help message
+      §6§lTelegramLogger §7➜ §cUse these commands:
+      §e/tl reload §7- §fReload the plugin
+      §e/tl start §7- §fStart message forwarding
+      §e/tl stop §7- §fStop message forwarding
+      §e/tl stats §7- §fView message statistics
+      §e/tl debug §7- §fToggle debug mode
+      §e/tl status §7- §fShow plugin status
+      §e/tl admin add <id> <name> §7- §fAdd new admin
+      §e/tl admin remove <id> §7- §fRemove admin
+      §e/tl admin list §7- §fList all admins
+      §e/tl help §7- §fShow help message
     aliases: [tl, tlog]
     permission: telegramlogger.admin
-    permission-message: §6§lTelegramLogger §7➜ §c§l❌ You don’t have permission to use this command!
+    permission-message: §6§lTelegramLogger §7➜ §c§l❌ You don't have permission!
 
 permissions:
   telegramlogger.admin:
@@ -33,5 +33,5 @@ permissions:
 
 softdepend: []
 
-loadbefore: [Skript, Minepacks, GriefPrevention, AntiWorldDownloader, ItemEdit, Skript]
+loadbefore: [Skript, Minepacks, GriefPrevention, AntiWorldDownloader, ItemEdit]
 load: STARTUP

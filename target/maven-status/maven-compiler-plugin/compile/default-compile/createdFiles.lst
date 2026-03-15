@@ -1,3 +1,14 @@
+uz/lazizbekdev/telegramlogger/telegram/TelegramHandler$2.class
+uz/lazizbekdev/telegramlogger/utils/MessageUtils.class
+uz/lazizbekdev/telegramlogger/telegram/TelegramHandler.class
+uz/lazizbekdev/telegramlogger/config/ConfigManager.class
+uz/lazizbekdev/telegramlogger/listeners/EventListener.class
+uz/lazizbekdev/telegramlogger/utils/AntiFloodManager$SlidingWindow.class
+uz/lazizbekdev/telegramlogger/telegram/TelegramHandler$1.class
+uz/lazizbekdev/telegramlogger/utils/AntiFloodManager.class
 uz/lazizbekdev/telegramlogger/TelegramLogger.class
-uz/lazizbekdev/telegramlogger/TelegramLogger$2.class
-uz/lazizbekdev/telegramlogger/TelegramLogger$1.class
+uz/lazizbekdev/telegramlogger/telegram/OutputCapturingSender.class
+uz/lazizbekdev/telegramlogger/managers/AdminManager.class
+uz/lazizbekdev/telegramlogger/managers/DataManager.class
+uz/lazizbekdev/telegramlogger/commands/CommandHandler.class
+uz/lazizbekdev/telegramlogger/telegram/TelegramAPI.class

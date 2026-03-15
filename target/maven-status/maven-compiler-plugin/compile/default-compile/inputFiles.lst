@@ -1,1 +1,11 @@
-/root/test/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/TelegramLogger.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/listeners/EventListener.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/utils/MessageUtils.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/config/ConfigManager.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/managers/AdminManager.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/telegram/TelegramHandler.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/telegram/TelegramAPI.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/commands/CommandHandler.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/telegram/OutputCapturingSender.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/TelegramLogger.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/utils/AntiFloodManager.java
+/root/TelegramLogger/src/main/java/uz/lazizbekdev/telegramlogger/managers/DataManager.java
