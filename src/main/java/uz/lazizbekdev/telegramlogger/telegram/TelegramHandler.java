@@ -158,8 +158,10 @@ public class TelegramHandler {
             try {
                 List<String> output = new ArrayList<>();
 
-                // Capture console output via a temporary logger handler
-                java.util.logging.Logger serverLogger = Bukkit.getServer().getLogger();
+                // Capture console output via temporary logger handlers.
+                // ConsoleSender.sendMessage() logs to Bukkit.getLogger() ("Minecraft"),
+                // while some commands log to Bukkit.getServer().getLogger() (server logger).
+                // We hook both to ensure we capture all output.
                 Handler captureHandler = new Handler() {
                     @Override
                     public void publish(LogRecord record) {
@@ -170,13 +172,23 @@ public class TelegramHandler {
                     @Override public void flush() {}
                     @Override public void close() {}
                 };
-                serverLogger.addHandler(captureHandler);
+                captureHandler.setLevel(java.util.logging.Level.ALL);
+
+                java.util.logging.Logger bukkitLogger = Bukkit.getLogger();
+                java.util.logging.Logger serverLogger = Bukkit.getServer().getLogger();
+                bukkitLogger.addHandler(captureHandler);
+                if (serverLogger != bukkitLogger) {
+                    serverLogger.addHandler(captureHandler);
+                }
 
                 boolean success;
                 try {
                     success = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
                 } finally {
-                    serverLogger.removeHandler(captureHandler);
+                    bukkitLogger.removeHandler(captureHandler);
+                    if (serverLogger != bukkitLogger) {
+                        serverLogger.removeHandler(captureHandler);
+                    }
                 }
 
                 StringBuilder response = new StringBuilder();

@@ -15,8 +15,11 @@ import uz.lazizbekdev.telegramlogger.telegram.TelegramAPI;
 import uz.lazizbekdev.telegramlogger.utils.AntiFloodManager;
 import uz.lazizbekdev.telegramlogger.utils.MessageUtils;
 
+import org.bukkit.plugin.RegisteredServiceProvider;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
@@ -33,6 +36,9 @@ public class EventListener implements Listener {
     public EventListener(TelegramLogger plugin) {
         this.plugin = plugin;
     }
+
+    private static Object vaultChat = null;
+    private static boolean vaultChecked = false;
 
     private ConfigManager cfg() { return plugin.getConfigManager(); }
     private TelegramAPI api() { return plugin.getTelegramAPI(); }
@@ -205,17 +211,74 @@ public class EventListener implements Listener {
         rawDisplay = MessageUtils.applyPrefixReplacements(rawDisplay, replacements);
         ph.put("%displayname%", MessageUtils.escapeHtml(rawDisplay));
 
-        String prefix = MessageUtils.extractPrefix(player.getDisplayName(), player.getName());
+        // Try Vault first (works with LuckPerms, PEX, etc.), fall back to display name extraction
+        String prefix = getVaultPrefix(player);
+        String suffix = getVaultSuffix(player);
+        if (prefix.isEmpty()) {
+            prefix = MessageUtils.extractPrefix(player.getDisplayName(), player.getName());
+        }
+        if (suffix.isEmpty()) {
+            suffix = MessageUtils.extractSuffix(player.getDisplayName(), player.getName());
+        }
         prefix = MessageUtils.applyPrefixReplacements(prefix, replacements);
-        ph.put("%prefix%", MessageUtils.escapeHtml(prefix));
-
-        String suffix = MessageUtils.extractSuffix(player.getDisplayName(), player.getName());
         suffix = MessageUtils.applyPrefixReplacements(suffix, replacements);
+        ph.put("%prefix%", MessageUtils.escapeHtml(prefix));
         ph.put("%suffix%", MessageUtils.escapeHtml(suffix));
 
         ph.put("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()));
         ph.put("%max%", String.valueOf(Bukkit.getMaxPlayers()));
         return ph;
+    }
+
+    private void initVaultChat() {
+        if (vaultChecked) return;
+        vaultChecked = true;
+        try {
+            Class<?> chatClass = Class.forName("net.milkbowl.vault.chat.Chat");
+            RegisteredServiceProvider<?> rsp = Bukkit.getServer().getServicesManager().getRegistration(chatClass);
+            if (rsp != null) {
+                vaultChat = rsp.getProvider();
+                plugin.getLogger().info("Vault Chat provider found: " + vaultChat.getClass().getSimpleName());
+            }
+        } catch (ClassNotFoundException ignored) {
+            // Vault not installed
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to hook into Vault Chat: " + e.getMessage());
+        }
+    }
+
+    private String getVaultPrefix(Player player) {
+        initVaultChat();
+        if (vaultChat == null) return "";
+        try {
+            Method m = vaultChat.getClass().getMethod("getPlayerPrefix", Player.class);
+            String result = (String) m.invoke(vaultChat, player);
+            return result != null ? MessageUtils.stripColors(result).trim() : "";
+        } catch (NoSuchMethodException e) {
+            try {
+                Method m = vaultChat.getClass().getMethod("getPlayerPrefix", String.class, String.class);
+                String result = (String) m.invoke(vaultChat, player.getWorld().getName(), player.getName());
+                return result != null ? MessageUtils.stripColors(result).trim() : "";
+            } catch (Exception ignored) {}
+        } catch (Exception ignored) {}
+        return "";
+    }
+
+    private String getVaultSuffix(Player player) {
+        initVaultChat();
+        if (vaultChat == null) return "";
+        try {
+            Method m = vaultChat.getClass().getMethod("getPlayerSuffix", Player.class);
+            String result = (String) m.invoke(vaultChat, player);
+            return result != null ? MessageUtils.stripColors(result).trim() : "";
+        } catch (NoSuchMethodException e) {
+            try {
+                Method m = vaultChat.getClass().getMethod("getPlayerSuffix", String.class, String.class);
+                String result = (String) m.invoke(vaultChat, player.getWorld().getName(), player.getName());
+                return result != null ? MessageUtils.stripColors(result).trim() : "";
+            } catch (Exception ignored) {}
+        } catch (Exception ignored) {}
+        return "";
     }
 
     private boolean containsFilteredWord(String message) {

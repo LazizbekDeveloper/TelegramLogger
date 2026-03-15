@@ -31,49 +31,49 @@ server_stop_message: "<blockquote>🔴 <b>Server stopped!</b></blockquote>"
 # ---------------------
 enable_join: true
 join_message: "<blockquote>➕ <b>%player%</b> joined the game! (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%
 
 # ---------------------
 # First Join (new players)
 # ---------------------
 enable_first_join: true
 first_join_message: "<blockquote>🌟 <b>%player%</b> joined for the first time! Welcome! (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%
 
 # ---------------------
 # Leave Messages
 # ---------------------
 enable_leave: true
 leave_message: "<blockquote>➖ <b>%player%</b> left the game! (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%
 
 # ---------------------
 # Chat Messages
 # ---------------------
 enable_chat: true
 chat_message: "💬 <b>%player%</b> ➥ %message%"
-# Available placeholders: %player%, %displayname%, %message%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %message%, %online%, %max%
 
 # ---------------------
 # Advancement Messages
 # ---------------------
 enable_advancement: true
 advancement_message: "<blockquote>🏆 <b>%player%</b> earned <b>[%advancement%]</b> (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %advancement%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %advancement%, %online%, %max%
 
 # ---------------------
 # Death Messages
 # ---------------------
 enable_death: true
 death_message: "<blockquote>💀 %death_message% (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %death_message%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %death_message%, %online%, %max%
 
 # ---------------------
 # World Switch Messages
 # ---------------------
 enable_world_switch: true
 world_switch_message: "<blockquote>🌍 <b>%player%</b> moved: %from_world% → %to_world% (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %from_world%, %to_world%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %from_world%, %to_world%, %online%, %max%
 
 # ---------------------
 # Chat Filter
@@ -83,7 +83,7 @@ filtered_words:
   - "badword1"
   - "badword2"
 filtered_message: "<blockquote>🚫 <b>%player%</b> used a filtered word. (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%
 
 # ---------------------
 # Command Execution Logging
@@ -98,7 +98,7 @@ ignored_commands:
   - "/register"
   - "/l"
   - "/reg"
-# Available placeholders: %player%, %displayname%, %command%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %command%, %online%, %max%
 
 # ---------------------
 # Prefix Replacements
