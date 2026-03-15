@@ -17,34 +17,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Filter;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 
-/**
- * Handles Telegram update polling, message processing, and command routing.
- *
- * Key fixes over v4:
- *  - AtomicBoolean guard prevents overlapping poll requests (duplicate message fix)
- *  - /sudo safely handles missing message_thread_id
- *  - /sudo captures command output via a custom CommandSender wrapper
- */
 public class TelegramHandler {
 
     private final TelegramLogger plugin;
-    private long lastUpdateId = 0;
-
-    /** Prevents concurrent long-poll requests that cause duplicate messages. */
+    private volatile long lastUpdateId = 0;
     private final AtomicBoolean polling = new AtomicBoolean(false);
 
     public TelegramHandler(TelegramLogger plugin) {
         this.plugin = plugin;
     }
 
-    // ─── Polling ─────────────────────────────────────────
+    public long getLastUpdateId() { return lastUpdateId; }
+    public void setLastUpdateId(long id) { this.lastUpdateId = id; }
 
-    /**
-     * Start the async polling loop. Runs every second but the guard
-     * ensures only one HTTP request is in-flight at a time.
-     */
     public void startPolling() {
         new BukkitRunnable() {
             @Override
@@ -54,8 +44,6 @@ public class TelegramHandler {
                     return;
                 }
                 if (!plugin.isPluginActive() || !plugin.isBotActive()) return;
-
-                // Skip if a poll is already running (prevents duplicate messages)
                 if (!polling.compareAndSet(false, true)) return;
 
                 try {
@@ -75,15 +63,12 @@ public class TelegramHandler {
         }.runTaskTimerAsynchronously(plugin, 20L, 20L);
     }
 
-    // ─── Update processing ──────────────────────────────
-
     private void processUpdates(JsonArray updates) {
         for (JsonElement elem : updates) {
             try {
                 JsonObject update = elem.getAsJsonObject();
                 long updateId = update.get("update_id").getAsLong();
 
-                // Strictly increase offset to avoid reprocessing
                 if (updateId <= lastUpdateId) continue;
                 lastUpdateId = updateId;
 
@@ -98,25 +83,20 @@ public class TelegramHandler {
                 long chatIdFromMsg = message.get("chat").getAsJsonObject().get("id").getAsLong();
                 int messageId = message.get("message_id").getAsInt();
 
-                // Safe thread ID extraction (fixes NPE crash)
                 int threadIdFromMsg = message.has("message_thread_id")
                         ? message.get("message_thread_id").getAsInt() : 0;
 
-                // Handle /sudo before chat-id filter so it works in command channels too
                 if (plugin.getConfigManager().isEnableSudoCommand()
                         && messageText.startsWith("/sudo")) {
                     handleSudo(userIdStr, messageText, chatIdFromMsg, threadIdFromMsg, messageId);
                     continue;
                 }
 
-                // Only process messages from the configured chat
                 String expectedChatId = plugin.getConfigManager().getChatId();
                 if (!String.valueOf(chatIdFromMsg).equals(expectedChatId)) continue;
 
-                // Thread filter
                 if (!isValidThread(message)) continue;
 
-                // Route commands vs regular messages
                 if (messageText.startsWith("/")) {
                     handleCommand(userIdStr, messageText);
                 } else if (plugin.getConfigManager().isSendTelegramMessagesToGame()) {
@@ -136,7 +116,7 @@ public class TelegramHandler {
         return String.valueOf(message.get("message_thread_id").getAsInt()).equals(expected);
     }
 
-    // ─── Sudo command (fixed) ───────────────────────────
+    // --- Sudo command (uses ConsoleSender + logger capture) ---
 
     private void handleSudo(String userIdStr, String messageText, long chatId, int threadId, int messageId) {
         AdminManager admins = plugin.getAdminManager();
@@ -147,7 +127,6 @@ public class TelegramHandler {
             return;
         }
 
-        // Strip "/sudo" or "/sudo@botname" prefix
         String command = messageText;
         int spaceIdx = command.indexOf(' ');
         if (spaceIdx == -1) {
@@ -162,7 +141,6 @@ public class TelegramHandler {
             return;
         }
 
-        // Check blacklist
         ConfigManager cfg = plugin.getConfigManager();
         String cmdLower = command.toLowerCase();
         for (String blocked : cfg.getSudoBlacklist()) {
@@ -176,18 +154,31 @@ public class TelegramHandler {
         String adminName = admins.getName(userIdStr);
         final String finalCommand = command;
 
-        // Execute on main thread and capture output
         Bukkit.getScheduler().runTask(plugin, () -> {
             try {
                 List<String> output = new ArrayList<>();
 
-                // Custom command sender that captures output
-                org.bukkit.command.CommandSender captureSender = new OutputCapturingSender(
-                        Bukkit.getConsoleSender(), output);
+                // Capture console output via a temporary logger handler
+                java.util.logging.Logger serverLogger = Bukkit.getServer().getLogger();
+                Handler captureHandler = new Handler() {
+                    @Override
+                    public void publish(LogRecord record) {
+                        if (record.getMessage() != null) {
+                            output.add(record.getMessage());
+                        }
+                    }
+                    @Override public void flush() {}
+                    @Override public void close() {}
+                };
+                serverLogger.addHandler(captureHandler);
 
-                boolean success = Bukkit.dispatchCommand(captureSender, finalCommand);
+                boolean success;
+                try {
+                    success = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
+                } finally {
+                    serverLogger.removeHandler(captureHandler);
+                }
 
-                // Build response
                 StringBuilder response = new StringBuilder();
                 if (success) {
                     response.append("\u2705 <b>Command executed</b>\n");
@@ -200,7 +191,6 @@ public class TelegramHandler {
                 if (cfg.isSudoShowOutput() && !output.isEmpty()) {
                     response.append("\n\n\uD83D\uDCCB <b>Output:</b>\n<pre>");
                     String outputText = String.join("\n", output);
-                    // Telegram has 4096 char limit; truncate if needed
                     if (outputText.length() > 3000) {
                         outputText = outputText.substring(0, 3000) + "\n... (truncated)";
                     }
@@ -217,7 +207,7 @@ public class TelegramHandler {
         });
     }
 
-    // ─── Telegram commands ──────────────────────────────
+    // --- Telegram commands ---
 
     private void handleCommand(String userIdStr, String messageText) {
         AdminManager admins = plugin.getAdminManager();
@@ -226,7 +216,6 @@ public class TelegramHandler {
             return;
         }
 
-        // Normalize: strip @botname suffix and lowercase
         String cmd = messageText.split("@")[0].toLowerCase().trim();
 
         if (cmd.equals("/status")) {
@@ -235,8 +224,6 @@ public class TelegramHandler {
             sendTelegramStats();
         } else if (cmd.equals("/players") || cmd.equals("/online")) {
             sendOnlinePlayers();
-        } else if (cmd.equals("/reload")) {
-            handleTelegramReload(admins.getName(userIdStr));
         } else if (cmd.equals("/start")) {
             handleTelegramStart(admins.getName(userIdStr));
         } else if (cmd.equals("/stop")) {
@@ -252,8 +239,6 @@ public class TelegramHandler {
                     "\u274C Unknown command. Use /help for available commands.");
         }
     }
-
-    // ─── Command implementations ────────────────────────
 
     private void sendTelegramStatus() {
         ConfigManager cfg = plugin.getConfigManager();
@@ -315,8 +300,9 @@ public class TelegramHandler {
             sb.append("\u2022 ");
             if (p.hasPermission("telegramlogger.admin")) sb.append("\uD83D\uDC51 ");
             sb.append("<b>").append(MessageUtils.escapeHtml(p.getName())).append("</b>");
-            if (!p.getDisplayName().equals(p.getName())) {
-                sb.append(" (").append(MessageUtils.escapeHtml(p.getDisplayName())).append(")");
+            String displayClean = MessageUtils.stripColors(p.getDisplayName());
+            if (!displayClean.equals(p.getName())) {
+                sb.append(" (").append(MessageUtils.escapeHtml(displayClean)).append(")");
             }
             sb.append("\n");
         }
@@ -326,17 +312,6 @@ public class TelegramHandler {
         }
 
         plugin.getTelegramAPI().sendMessage(sb.toString());
-    }
-
-    private void handleTelegramReload(String adminName) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            try {
-                plugin.performReload();
-                plugin.getTelegramAPI().sendMessage("\u2705 Plugin reloaded by " + adminName);
-            } catch (Exception e) {
-                plugin.getTelegramAPI().sendMessage("\u274C Reload failed: " + e.getMessage());
-            }
-        });
     }
 
     private void handleTelegramStart(String adminName) {
@@ -370,18 +345,17 @@ public class TelegramHandler {
     private void sendTelegramHelp() {
         StringBuilder sb = new StringBuilder();
         sb.append("\uD83D\uDCDA <b>TelegramLogger Commands</b>\n\n");
-        sb.append("\uD83D\uDD39 /status — Server & plugin status\n");
-        sb.append("\uD83D\uDCCA /stats — Message statistics\n");
-        sb.append("\uD83D\uDC65 /players — Online player list\n");
-        sb.append("\uD83D\uDD04 /reload — Reload plugin config\n");
-        sb.append("\u25B6\uFE0F /start — Start message forwarding\n");
-        sb.append("\u23F9\uFE0F /stop — Stop message forwarding\n");
-        sb.append("\uD83D\uDC1E /debug — Toggle debug mode\n");
-        sb.append("\uD83D\uDCBB /tps — Server performance\n");
+        sb.append("\uD83D\uDD39 /status \u2014 Server &amp; plugin status\n");
+        sb.append("\uD83D\uDCCA /stats \u2014 Message statistics\n");
+        sb.append("\uD83D\uDC65 /players \u2014 Online player list\n");
+        sb.append("\u25B6\uFE0F /start \u2014 Start message forwarding\n");
+        sb.append("\u23F9\uFE0F /stop \u2014 Stop message forwarding\n");
+        sb.append("\uD83D\uDC1E /debug \u2014 Toggle debug mode\n");
+        sb.append("\uD83D\uDCBB /tps \u2014 Server performance\n");
         if (plugin.getConfigManager().isEnableSudoCommand()) {
-            sb.append("\uD83D\uDC51 /sudo &lt;cmd&gt; — Execute server command\n");
+            sb.append("\uD83D\uDC51 /sudo [command] \u2014 Execute server command\n");
         }
-        sb.append("\u2753 /help — This help message\n\n");
+        sb.append("\u2753 /help \u2014 This help message\n\n");
         sb.append("\u2728 Send any text to broadcast it in-game.");
         plugin.getTelegramAPI().sendMessage(sb.toString());
     }
@@ -389,7 +363,6 @@ public class TelegramHandler {
     private void sendServerTps() {
         Bukkit.getScheduler().runTask(plugin, () -> {
             try {
-                // Use reflection to access Spigot's TPS
                 Object server = Bukkit.getServer().getClass().getMethod("getServer").invoke(Bukkit.getServer());
                 double[] tps = (double[]) server.getClass().getField("recentTps").get(server);
                 StringBuilder sb = new StringBuilder();
@@ -413,7 +386,7 @@ public class TelegramHandler {
         });
     }
 
-    // ─── Chat message handling ──────────────────────────
+    // --- Chat message handling ---
 
     private void handleChatMessage(long userId, String userIdStr, String messageText) {
         AdminManager admins = plugin.getAdminManager();
@@ -435,7 +408,6 @@ public class TelegramHandler {
             return;
         }
 
-        // Check filter
         if (containsFilteredWord(messageText)) {
             plugin.getTelegramAPI().sendMessage("\u274C Message contains filtered words.");
             return;
@@ -450,10 +422,6 @@ public class TelegramHandler {
         return plugin.getConfigManager().getFilteredWords().stream().anyMatch(lower::contains);
     }
 
-    /**
-     * Broadcast a Telegram message to Minecraft.
-     * Fixed: prefix is only added once, not per line.
-     */
     public void broadcastToMinecraft(String senderName, String message) {
         new BukkitRunnable() {
             @Override
@@ -467,8 +435,6 @@ public class TelegramHandler {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.sendMessage(formatted);
                 }
-
-                // Log to console (single clean line, no prefix spam)
                 plugin.getLogger().info("[TG] " + senderName + ": " + message);
             }
         }.runTask(plugin);

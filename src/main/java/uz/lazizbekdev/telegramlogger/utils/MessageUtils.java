@@ -20,9 +20,16 @@ public final class MessageUtils {
 
     public static String stripColors(String message) {
         if (message == null) return "";
+        // Protect HTML entities from color code stripping (&lt; contains &l which is bold code)
+        message = message.replace("&lt;", "\u0000LT\u0000");
+        message = message.replace("&gt;", "\u0000GT\u0000");
+        message = message.replace("&amp;", "\u0000AMP\u0000");
         String stripped = ChatColor.stripColor(message);
         stripped = stripped.replaceAll("&[0-9a-fk-orA-FK-OR]", "");
         stripped = stripped.replaceAll("§[0-9a-fk-orA-FK-OR]", "");
+        stripped = stripped.replace("\u0000LT\u0000", "&lt;");
+        stripped = stripped.replace("\u0000GT\u0000", "&gt;");
+        stripped = stripped.replace("\u0000AMP\u0000", "&amp;");
         return stripped;
     }
 
@@ -145,5 +152,50 @@ public final class MessageUtils {
     public static String escapeHtml(String text) {
         if (text == null) return "";
         return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    /**
+     * Clean chat component tags from player messages.
+     * Plugins like mention/chat formatters inject tags like {@code <chat=UUID:text>}
+     * which should be stripped before sending to Telegram.
+     */
+    public static String cleanChatComponents(String message) {
+        if (message == null) return "";
+        return message.replaceAll("<[^>]*=[^>]*>", "").trim();
+    }
+
+    /**
+     * Extract prefix from a player's display name (everything before the raw name).
+     */
+    public static String extractPrefix(String displayName, String playerName) {
+        if (displayName == null || playerName == null) return "";
+        String clean = stripColors(displayName);
+        int idx = clean.indexOf(playerName);
+        if (idx <= 0) return "";
+        return clean.substring(0, idx).trim();
+    }
+
+    /**
+     * Extract suffix from a player's display name (everything after the raw name).
+     */
+    public static String extractSuffix(String displayName, String playerName) {
+        if (displayName == null || playerName == null) return "";
+        String clean = stripColors(displayName);
+        int idx = clean.indexOf(playerName);
+        if (idx < 0) return "";
+        int end = idx + playerName.length();
+        if (end >= clean.length()) return "";
+        return clean.substring(end).trim();
+    }
+
+    /**
+     * Apply prefix replacement rules from config.
+     */
+    public static String applyPrefixReplacements(String text, Map<String, String> replacements) {
+        if (text == null || replacements == null || replacements.isEmpty()) return text;
+        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+            text = text.replace(entry.getKey(), entry.getValue());
+        }
+        return text;
     }
 }

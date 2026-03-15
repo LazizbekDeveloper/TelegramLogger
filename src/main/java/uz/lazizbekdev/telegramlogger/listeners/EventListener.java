@@ -99,7 +99,10 @@ public class EventListener implements Listener {
         }
 
         Map<String, String> ph = basePlayerPlaceholders(player);
-        ph.put("%message%", MessageUtils.escapeHtml(event.getMessage()));
+        // Clean chat component tags injected by other plugins (mentions, etc.)
+        String cleanMessage = MessageUtils.cleanChatComponents(event.getMessage());
+        cleanMessage = MessageUtils.stripColors(cleanMessage);
+        ph.put("%message%", MessageUtils.escapeHtml(cleanMessage));
 
         String msg = MessageUtils.applyPlaceholders(cfg().getChatMessage(), ph);
         api().sendMessage(MessageUtils.stripColors(msg));
@@ -196,7 +199,20 @@ public class EventListener implements Listener {
     private Map<String, String> basePlayerPlaceholders(Player player) {
         Map<String, String> ph = new LinkedHashMap<>();
         ph.put("%player%", player.getName());
-        ph.put("%displayname%", MessageUtils.escapeHtml(player.getDisplayName()));
+
+        String rawDisplay = MessageUtils.stripColors(player.getDisplayName());
+        Map<String, String> replacements = cfg().getPrefixReplacements();
+        rawDisplay = MessageUtils.applyPrefixReplacements(rawDisplay, replacements);
+        ph.put("%displayname%", MessageUtils.escapeHtml(rawDisplay));
+
+        String prefix = MessageUtils.extractPrefix(player.getDisplayName(), player.getName());
+        prefix = MessageUtils.applyPrefixReplacements(prefix, replacements);
+        ph.put("%prefix%", MessageUtils.escapeHtml(prefix));
+
+        String suffix = MessageUtils.extractSuffix(player.getDisplayName(), player.getName());
+        suffix = MessageUtils.applyPrefixReplacements(suffix, replacements);
+        ph.put("%suffix%", MessageUtils.escapeHtml(suffix));
+
         ph.put("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()));
         ph.put("%max%", String.valueOf(Bukkit.getMaxPlayers()));
         return ph;

@@ -6,7 +6,7 @@
 
 [![Java](https://img.shields.io/badge/Java-8%2B-orange)](https://www.java.com)
 [![Spigot](https://img.shields.io/badge/Spigot-1.16--1.21-yellow)](https://www.spigotmc.org)
-[![Version](https://img.shields.io/badge/version-5.0.0-brightgreen)](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
+[![Version](https://img.shields.io/badge/version-5.0.1-brightgreen)](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Downloads](https://img.shields.io/badge/downloads-1K%2B-blue)](https://www.spigotmc.org/resources/120590)
 
@@ -34,6 +34,7 @@ Serveringizdagi barcha harakatlarni Telegram guruh yoki kanalingiz orqali real v
 - [Konfiguratsiya ma'lumotnomasi](#konfiguratsiya-malumotnomasi)
   - [Bot sozlamalari](#bot-sozlamalari)
   - [Xabar prefiksi](#xabar-prefiksi)
+  - [Prefiks almashtirishlari](#prefiks-almashtirishlari)
   - [Server ishga tushishi/to'xtashi](#server-ishga-tushishitoxtashi)
   - [Kirish/Chiqish xabarlari](#kirishchiqish-xabarlari)
   - [Birinchi kirish (Yangi o'yinchi)](#birinchi-kirish-yangi-oyinchi)
@@ -107,6 +108,10 @@ Serveringizdagi barcha harakatlarni Telegram guruh yoki kanalingiz orqali real v
 - **`/sudo` buyrug'i nosozligi tuzatildi** — Sudo buyrug'i forum bo'lmagan guruhlarda ishlamay qolardi, chunki `message_thread_id` mavjud bo'lmasa ham unga murojaat qilardi. Endi yo'q bo'lgan thread ID larni to'g'ri boshqaradi.
 - **`/sudo` natija ko'rsatmasligi tuzatildi** — Oldin `/sudo plugins` "muvaffaqiyatli bajarildi" deb ko'rsatar, lekin natijani ko'rsatmasdi. Endi Telegramda to'liq buyruq natijasini ko'rsatadi.
 - **Ko'p qatorli xabar prefiks muammosi tuzatildi** — Telegramdan ko'p qatorli xabarlarda plugin prefiksi har bir qatorga qo'shilardi. Endi prefiks faqat bir marta qo'llaniladi.
+- **HTML entity buzilishi tuzatildi** — `&lt;` kabi HTML entitylar rang kodi tozalagich tomonidan buzilardi, ularni `t;` ga aylantirardi. Endi HTML entitylar butun xabar pipeline orqali to'g'ri saqlanadi.
+- **`/reload` Telegram xabar to'lib ketishiga sabab bo'lishi tuzatildi** — Telegramdan `/reload` ishlatish cheksiz siklga sabab bo'lardi, chunki yangilanish offseti reload paytida yo'qolardi. Endi reload faqat o'yinda mavjud.
+- **`/sudo` vanilla buyruqlar bilan nosozligi tuzatildi** — Maxsus CommandSender yondashuvi vanilla Minecraft buyruqlari bilan nosozlikka sabab bo'lardi. Endi ishonchli natija olish uchun konsol yuboruvchisi va logger yozuvchisi ishlatiladi.
+- **Chat mention plugin axlati tuzatildi** — Mention plaginlari xabarlarga `<chat=UUID:text>` kabi komponent teglarini kiritadi. Bular endi Telegramga uzatishdan oldin tozalanadi.
 
 ### Yangi imkoniyatlar
 - **Server ishga tushishi/to'xtashi bildirishnomalari** — Server ishga tushganda yoki to'xtaganda Telegramda xabar olasiz
@@ -116,6 +121,9 @@ Serveringizdagi barcha harakatlarni Telegram guruh yoki kanalingiz orqali real v
 - **Sudo qora ro'yxat** — Xavfli buyruqlarni (`stop`, `op`, `ban-ip` va h.k.) masofadan bajarishni bloklash
 - **TPS buyrug'i** — Telegramdan `/tps` bilan server TPS va xotira ishlatilishini tekshirish
 - **Konfiguratsiyani avtomatik tiklash** — Konfiguratsiya buzilsa, plugin avtomatik ravishda zaxiralaydi, yangi konfiguratsiya yaratadi va tiklanadigan qiymatlarni ko'chiradi
+- **Prefiks almashtirishlari** — O'yin ichidagi xunuk unvon prefikslarini `prefix_replacements` konfiguratsiyasi orqali Telegram uchun toza matnga aylantiring
+- **Prefiks/Suffiks placeholderlari** — Yangi `%prefix%` va `%suffix%` placeholderlari o'yinchi ko'rsatish nomlaridan unvon teglarini ajratib oladi
+- **Chat komponent tozalash** — Plugin tomonidan kiritilgan komponent teglarini uzatishdan oldin avtomatik tozalaydi
 
 ### Kod yaxshilanishlari
 - **To'liq kod qayta tuzilmasi** — Monolitik 3000 qatorlik fayl 6 ta paketdagi 11 ta mustaqil sinfga bo'lindi
@@ -141,14 +149,14 @@ Serveringizdagi barcha harakatlarni Telegram guruh yoki kanalingiz orqali real v
 
 ### 1-qadam: Yuklab olish va o'rnatish
 
-1. So'nggi `TelegramLogger-5.0.0.jar` ni [Releases](https://github.com/LazizbekDeveloper/TelegramLogger/releases) dan yuklab oling
+1. So'nggi `TelegramLogger-5.0.1.jar` ni [Releases](https://github.com/LazizbekDeveloper/TelegramLogger/releases) dan yuklab oling
 2. `.jar` faylni serveringizning `plugins/` papkasiga joylashtiring
 3. Standart konfiguratsiya yaratish uchun serverni bir marta ishga tushiring
 4. Konfiguratsiyani tahrirlash uchun serverni to'xtating
 
 ```
 plugins/
-  TelegramLogger-5.0.0.jar
+  TelegramLogger-5.0.1.jar
   TelegramLogger/
     config.yml          <-- Ushbu faylni tahrirlang
     data.json           <-- Avtomatik yaratilgan statistika
@@ -178,7 +186,6 @@ plugins/
    status - Server holatini ko'rsatish
    stats - Xabar statistikasi
    players - Onlayn o'yinchilar
-   reload - Pluginni qayta yuklash
    start - Uzatishni boshlash
    stop - Uzatishni to'xtatish
    debug - Debug rejimini almashtirish
@@ -248,6 +255,16 @@ telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"   # TG→MC xabar 
 ```
 
 `telegram_game_message` shabloni Telegram xabarlarining Minecraft da qanday ko'rinishini boshqaradi. Mavjud placeholderlar: `%name%` (yuboruvchi ismi), `%message%` (xabar matni).
+
+### Prefiks almashtirishlari
+
+```yaml
+prefix_replacements:
+  "VIP": "[VIP]"
+  "ADMIN": "[ADMIN]"
+```
+
+O'yin ichidagi xunuk unvon prefikslarini Telegram xabarlari uchun toza matnga almashtiring. Kalit — o'yinchining ko'rsatish nomida topiladigan matn, qiymat — uni nima bilan almashtirish kerak. Almashtirilgan prefiksni ko'rsatish uchun xabar shablonlarida `%prefix%` placeholderini ishlating.
 
 ### Server ishga tushishi/to'xtashi
 
@@ -446,7 +463,6 @@ Barcha buyruqlar yuboruvchining ro'yxatdan o'tgan admin bo'lishini talab qiladi.
 | `/stats` | Sonlar va foizlar bilan xabar statistikasini ko'rish |
 | `/players` yoki `/online` | Onlayn o'yinchilar ro'yxati (20 tagacha, admin tojlari bilan) |
 | `/tps` | Server TPS (1d/5d/15d) va xotira ishlatilishini ko'rsatish |
-| `/reload` | Plugin konfiguratsiyasini qayta yuklash |
 | `/start` | Xabar uzatishni boshlash |
 | `/stop` | Xabar uzatishni to'xtatish |
 | `/debug` | Debug rejimini almashtirish |
@@ -459,7 +475,7 @@ Barcha buyruqlar yuboruvchining ro'yxatdan o'tgan admin bo'lishini talab qiladi.
 
 Adminlar — bu quyidagi imkoniyatlarga ega Telegram foydalanuvchilari:
 - Telegramdan Minecraft chatiga xabar yuborish
-- Telegram buyruqlarini ishlatish (/status, /stats, /reload, va h.k.)
+- Telegram buyruqlarini ishlatish (/status, /stats, va h.k.)
 - /sudo orqali server buyruqlarini bajarish (agar yoqilgan bo'lsa)
 
 ### Admin ro'yxatdan o'tkazish
@@ -498,6 +514,8 @@ Mavjud placeholderlar xabar turiga qarab farq qiladi:
 |---|---|---|
 | `%player%` | Barcha o'yinchi hodisalari | O'yinchi foydalanuvchi nomi |
 | `%displayname%` | Barcha o'yinchi hodisalari | O'yinchi ko'rsatiladigan nomi (ranglarni o'z ichiga olishi mumkin) |
+| `%prefix%` | Barcha o'yinchi hodisalari | O'yinchi unvon prefiksi (ko'rsatish nomidan ajratilgan) |
+| `%suffix%` | Barcha o'yinchi hodisalari | O'yinchi unvon suffiksi (ko'rsatish nomidan ajratilgan) |
 | `%online%` | Barcha hodisalar | Joriy onlayn o'yinchilar soni |
 | `%max%` | Barcha hodisalar | Maksimal o'yinchi joylari |
 | `%message%` | Chat xabarlari | Chat xabari mazmuni |
@@ -617,7 +635,6 @@ uz.lazizbekdev.telegramlogger/
 ├── telegram/
 │   ├── TelegramAPI.java             # Telegram Bot API bilan HTTP aloqa
 │   ├── TelegramHandler.java         # Polling, buyruq yo'naltirish, xabar qayta ishlash
-│   └── OutputCapturingSender.java   # /sudo uchun buyruq natijasini olish
 ├── listeners/
 │   └── EventListener.java           # Barcha Minecraft hodisa boshqaruvchilari
 ├── commands/
@@ -650,7 +667,7 @@ cd TelegramLogger
 mvn clean package
 
 # Natija JAR fayl quyidagi manzilda:
-# target/TelegramLogger-5.0.0.jar
+# target/TelegramLogger-5.0.1.jar
 ```
 
 ### Yig'ish natijasi
@@ -757,7 +774,7 @@ J: Hozircha dunyo nomi formatlash o'rnatilgan. Maxsus dunyo nomlari avtomatik fo
 <summary>To'liq standart config.yml ni ko'rish uchun bosing</summary>
 
 ```yaml
-# TelegramLogger v5.0.0
+# TelegramLogger v5.0.1
 # Developed by LazizbekDev
 # https://t.me/LazizbekDev
 
@@ -776,6 +793,11 @@ send_telegram_messages_to_game: false           # Telegram admin xabarlarini Min
 plugin_prefix: "&6&lTelegramLogger&7 ➜ &r&a"
 telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"
 # Mavjud placeholderlar: %name%, %message%
+
+# ---------------------
+# Prefiks almashtirishlari
+# ---------------------
+prefix_replacements: {}
 
 # ---------------------
 # Server ishga tushishi/to'xtashi
@@ -891,7 +913,7 @@ debug_mode: false                               # Batafsil debug loglashni yoqis
 # ---------------------
 # Plugin versiyasi (TAHRIRLAMANG)
 # ---------------------
-version: "5.0.0"
+version: "5.0.1"
 ```
 
 </details>

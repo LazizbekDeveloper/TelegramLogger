@@ -6,7 +6,7 @@
 
 [![Java](https://img.shields.io/badge/Java-8%2B-orange)](https://www.java.com)
 [![Spigot](https://img.shields.io/badge/Spigot-1.16--1.21-yellow)](https://www.spigotmc.org)
-[![Version](https://img.shields.io/badge/version-5.0.0-brightgreen)](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
+[![Version](https://img.shields.io/badge/version-5.0.1-brightgreen)](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Downloads](https://img.shields.io/badge/downloads-1K%2B-blue)](https://www.spigotmc.org/resources/120590)
 
@@ -34,6 +34,7 @@ Monitor all server activities in real-time through your Telegram group or channe
 - [Configuration Reference](#-configuration-reference)
   - [Bot Configuration](#bot-configuration)
   - [Message Prefix](#message-prefix)
+  - [Prefix Replacements](#prefix-replacements)
   - [Server Start/Stop Notifications](#server-startstop-notifications)
   - [Join/Leave Messages](#joinleave-messages)
   - [First Join (New Player Welcome)](#first-join-new-player-welcome)
@@ -107,6 +108,10 @@ Monitor all server activities in real-time through your Telegram group or channe
 - **Fixed `/sudo` command crashes** — The sudo command would crash in non-forum groups because it tried to access `message_thread_id` even when it didn't exist. Now handles missing thread IDs gracefully.
 - **Fixed `/sudo` not showing output** — Previously, `/sudo plugins` would say "executed successfully" but show no output. Now captures and displays full command output in Telegram.
 - **Fixed multi-line message prefix spam** — Multi-line messages from Telegram had the plugin prefix prepended to every line. Now the prefix is applied only once.
+- **Fixed HTML entity corruption** — HTML entities like `&lt;` were being corrupted by the color code stripper, turning them into `t;`. Now HTML entities are preserved correctly through the entire message pipeline.
+- **Fixed `/reload` causing Telegram message flood** — Using `/reload` from Telegram caused an infinite loop because the update offset was lost during reload, causing the reload command to be re-processed endlessly. Reload is now only available in-game.
+- **Fixed `/sudo` crashing with vanilla commands** — The custom CommandSender approach caused crashes with vanilla Minecraft commands. Now uses console sender with logger capture for reliable output.
+- **Fixed chat mention plugin garbage in Telegram** — Mention plugins inject component tags like `<chat=UUID:text>` into messages. These are now cleaned before forwarding to Telegram.
 
 ### New Features
 - **Server Start/Stop Notifications** — Get notified in Telegram when your server starts or stops
@@ -116,6 +121,9 @@ Monitor all server activities in real-time through your Telegram group or channe
 - **Sudo Blacklist** — Block dangerous commands (`stop`, `op`, `ban-ip`, etc.) from remote execution
 - **TPS Command** — Check server TPS and memory usage from Telegram with `/tps`
 - **Config Auto-Restore** — If your config becomes corrupt, the plugin automatically backs it up, creates a fresh config, and migrates recoverable values
+- **Prefix Replacements** — Map ugly in-game rank prefixes to clean text for Telegram messages via `prefix_replacements` config
+- **Prefix/Suffix Placeholders** — New `%prefix%` and `%suffix%` placeholders extract rank tags from player display names
+- **Chat Component Cleaning** — Automatically strips plugin-injected component tags from chat messages before forwarding
 
 ### Code Improvements
 - **Full code restructuring** — Monolithic 3000-line file split into 11 focused classes across 6 packages
@@ -141,14 +149,14 @@ Monitor all server activities in real-time through your Telegram group or channe
 
 ### Step 1: Download and Install
 
-1. Download the latest `TelegramLogger-5.0.0.jar` from [Releases](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
+1. Download the latest `TelegramLogger-5.0.1.jar` from [Releases](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
 2. Place the `.jar` file in your server's `plugins/` folder
 3. Start the server once to generate the default configuration
 4. Stop the server to edit the configuration
 
 ```
 plugins/
-  TelegramLogger-5.0.0.jar
+  TelegramLogger-5.0.1.jar
   TelegramLogger/
     config.yml          <-- Edit this file
     data.json           <-- Auto-generated statistics
@@ -178,7 +186,6 @@ plugins/
    status - Show server status
    stats - Message statistics
    players - Online players
-   reload - Reload plugin
    start - Start forwarding
    stop - Stop forwarding
    debug - Toggle debug mode
@@ -248,6 +255,16 @@ telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"   # Format for TG�
 ```
 
 The `telegram_game_message` template controls how Telegram messages appear in Minecraft. Available placeholders: `%name%` (sender name), `%message%` (message text).
+
+### Prefix Replacements
+
+```yaml
+prefix_replacements:
+  "VIP": "[VIP]"
+  "ADMIN": "[ADMIN]"
+```
+
+Replace ugly in-game rank prefixes with clean text for Telegram messages. The key is the text to find in the player's display name, and the value is what to replace it with. Use the `%prefix%` placeholder in message templates to show the replaced prefix.
 
 ### Server Start/Stop Notifications
 
@@ -446,7 +463,6 @@ All commands require the sender to be a registered admin.
 | `/stats` | View message statistics with counts and percentages |
 | `/players` or `/online` | List online players (up to 20, with admin crowns) |
 | `/tps` | Show server TPS (1m/5m/15m) and memory usage |
-| `/reload` | Reload plugin configuration |
 | `/start` | Start message forwarding |
 | `/stop` | Stop message forwarding |
 | `/debug` | Toggle debug mode |
@@ -459,7 +475,7 @@ All commands require the sender to be a registered admin.
 
 Admins are Telegram users who can:
 - Send messages to the Minecraft chat from Telegram
-- Use Telegram commands (/status, /stats, /reload, etc.)
+- Use Telegram commands (/status, /stats, etc.)
 - Execute server commands via /sudo (if enabled)
 
 ### Registering an Admin
@@ -498,6 +514,8 @@ Available placeholders vary by message type:
 |---|---|---|
 | `%player%` | All player events | Player username |
 | `%displayname%` | All player events | Player display name (may include colors) |
+| `%prefix%` | All player events | Player rank prefix (extracted from display name) |
+| `%suffix%` | All player events | Player rank suffix (extracted from display name) |
 | `%online%` | All events | Current online player count |
 | `%max%` | All events | Maximum player slots |
 | `%message%` | Chat messages | The chat message content |
@@ -617,7 +635,6 @@ uz.lazizbekdev.telegramlogger/
 ├── telegram/
 │   ├── TelegramAPI.java             # HTTP communication with Telegram Bot API
 │   ├── TelegramHandler.java         # Polling, command routing, message processing
-│   └── OutputCapturingSender.java   # Command output capture for /sudo
 ├── listeners/
 │   └── EventListener.java           # All Minecraft event handlers
 ├── commands/
@@ -650,7 +667,7 @@ cd TelegramLogger
 mvn clean package
 
 # The output JAR will be at:
-# target/TelegramLogger-5.0.0.jar
+# target/TelegramLogger-5.0.1.jar
 ```
 
 ### Build Output
@@ -758,7 +775,7 @@ A: Currently, world name formatting is built-in. Custom world names are auto-for
 
 ```yaml
 # ===========================================
-#        TelegramLogger v5.0.0
+#        TelegramLogger v5.0.1
 #        Developed by LazizbekDev
 #        Telegram: https://t.me/LazizbekDev
 # ===========================================
@@ -771,6 +788,8 @@ send_telegram_messages_to_game: false
 
 plugin_prefix: "&6&lTelegramLogger&7 ➜ &r&a"
 telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"
+
+prefix_replacements: {}
 
 enable_server_start_stop: true
 server_start_message: "<blockquote>🟢 <b>Server started!</b>\nVersion: %version% | Max Players: %max%</blockquote>"
@@ -831,7 +850,7 @@ error_not_admin: "<blockquote>❌ You are not registered as an admin!</blockquot
 
 debug_mode: false
 
-version: "5.0.0"
+version: "5.0.1"
 ```
 
 </details>

@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class TelegramLogger extends JavaPlugin {
 
-    public static final String PLUGIN_VERSION = "5.0.0";
+    public static final String PLUGIN_VERSION = "5.0.1";
 
     private ConfigManager configManager;
     private DataManager dataManager;
@@ -171,7 +171,9 @@ public class TelegramLogger extends JavaPlugin {
         if (configManager.isValid() && telegramAPI.checkToken(configManager.getBotToken())) {
             botActive = true;
             pluginActive = true;
+            long savedOffset = telegramHandler != null ? telegramHandler.getLastUpdateId() : 0;
             telegramHandler = new TelegramHandler(this);
+            telegramHandler.setLastUpdateId(savedOffset);
             telegramHandler.startPolling();
             logAdmin("&a&l\u26A1 Plugin reloaded successfully!");
         } else {

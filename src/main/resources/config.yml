@@ -1,4 +1,4 @@
-# TelegramLogger v5.0.0
+# TelegramLogger v5.0.1
 # Developed by LazizbekDev
 # https://t.me/LazizbekDev
 
@@ -101,6 +101,18 @@ ignored_commands:
 # Available placeholders: %player%, %displayname%, %command%, %online%, %max%
 
 # ---------------------
+# Prefix Replacements
+# ---------------------
+# Replace ugly in-game prefixes with clean text for Telegram messages.
+# The key is the text to find, the value is what to replace it with.
+# Use %prefix% placeholder in message templates to show the replaced prefix.
+# Example:
+#   prefix_replacements:
+#     "VIP": "[VIP]"
+#     "ADMIN": "[ADMIN]"
+prefix_replacements: {}
+
+# ---------------------
 # Telegram Sudo Command
 # ---------------------
 enable_sudo_command: false                      # Allow admins to execute server commands via /sudo
@@ -132,4 +144,4 @@ debug_mode: false                               # Enable detailed debug logging
 # ---------------------
 # Plugin Version (DO NOT EDIT)
 # ---------------------
-version: "5.0.0"
+version: "5.0.1"

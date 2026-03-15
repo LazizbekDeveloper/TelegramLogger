@@ -7,7 +7,7 @@ uz/lazizbekdev/telegramlogger/utils/AntiFloodManager$SlidingWindow.class
 uz/lazizbekdev/telegramlogger/telegram/TelegramHandler$1.class
 uz/lazizbekdev/telegramlogger/utils/AntiFloodManager.class
 uz/lazizbekdev/telegramlogger/TelegramLogger.class
-uz/lazizbekdev/telegramlogger/telegram/OutputCapturingSender.class
+uz/lazizbekdev/telegramlogger/telegram/TelegramHandler$3.class
 uz/lazizbekdev/telegramlogger/managers/AdminManager.class
 uz/lazizbekdev/telegramlogger/managers/DataManager.class
 uz/lazizbekdev/telegramlogger/commands/CommandHandler.class

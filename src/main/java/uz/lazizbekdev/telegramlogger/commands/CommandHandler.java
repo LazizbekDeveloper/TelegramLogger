@@ -8,8 +8,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.java.JavaPlugin;
 import uz.lazizbekdev.telegramlogger.TelegramLogger;
 import uz.lazizbekdev.telegramlogger.config.ConfigManager;
 import uz.lazizbekdev.telegramlogger.managers.AdminManager;
@@ -19,9 +17,6 @@ import uz.lazizbekdev.telegramlogger.utils.MessageUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Handles /telegramlogger (/tl) in-game commands and tab completion.
- */
 public class CommandHandler implements CommandExecutor, TabCompleter {
 
     private final TelegramLogger plugin;
@@ -36,14 +31,16 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessageUtils.colorize(prefix() + message));
     }
 
-    // ─── Command routing ────────────────────────────────
+    private void sendRaw(CommandSender sender, String message) {
+        sender.sendMessage(MessageUtils.colorize(message));
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!command.getName().equalsIgnoreCase("telegramlogger")) return false;
 
         if (!sender.hasPermission("telegramlogger.admin")) {
-            send(sender, "&c&l\u274C You don't have permission!");
+            send(sender, "&cYou don't have permission!");
             return true;
         }
 
@@ -62,38 +59,36 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             case "admin":  doAdmin(sender, args); break;
             case "help":   showHelp(sender); break;
             default:
-                send(sender, "&c&l\u274C Unknown command. Use &e/tl help");
+                send(sender, "&cUnknown command. Use &e/tl help");
         }
         return true;
     }
 
-    // ─── Subcommands ────────────────────────────────────
-
     private void doReload(CommandSender sender) {
         try {
             plugin.performReload();
-            send(sender, "&a&l\u26A1 Plugin reloaded successfully!");
+            send(sender, "&aPlugin reloaded successfully!");
         } catch (Exception e) {
-            send(sender, "&c&l\u274C Reload failed: &e" + e.getMessage());
+            send(sender, "&cReload failed: &e" + e.getMessage());
         }
     }
 
     private void doStart(CommandSender sender) {
         if (plugin.isPluginActive()) {
-            send(sender, "&c&l\u274C Messaging is already active!");
+            send(sender, "&cMessaging is already active!");
             return;
         }
         plugin.setPluginActive(true);
-        send(sender, "&a&l\u26A1 Messaging started!");
+        send(sender, "&aMessaging started!");
     }
 
     private void doStop(CommandSender sender) {
         if (!plugin.isPluginActive()) {
-            send(sender, "&c&l\u274C Messaging is already inactive!");
+            send(sender, "&cMessaging is already inactive!");
             return;
         }
         plugin.setPluginActive(false);
-        send(sender, "&c&l\u26A1 Messaging stopped!");
+        send(sender, "&cMessaging stopped!");
     }
 
     private void doStats(CommandSender sender) {
@@ -101,44 +96,46 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         ConfigManager cfg = plugin.getConfigManager();
         String stats = data.getFormattedStats(cfg.isEnableSendCommandExecutes());
 
-        // Send with prefix only on the first line
         String[] lines = stats.split("\n");
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             if (i == 0 && line.trim().isEmpty()) continue;
             sender.sendMessage(MessageUtils.colorize(
-                    (i <= 1 ? prefix() : "  ") + line));
+                    (i <= 1 ? prefix() : "    ") + line));
         }
     }
 
     private void doDebug(CommandSender sender) {
         ConfigManager cfg = plugin.getConfigManager();
         cfg.setDebugMode(!cfg.isDebugMode());
-        send(sender, "&e&l\u26A1 Debug mode " +
-                (cfg.isDebugMode() ? "&a&lenabled" : "&c&ldisabled"));
+        send(sender, "&eDebug mode " +
+                (cfg.isDebugMode() ? "&aenabled" : "&cdisabled"));
     }
 
     private void doStatus(CommandSender sender) {
         ConfigManager cfg = plugin.getConfigManager();
 
-        send(sender, "&6&l=== TelegramLogger Status ===");
-        send(sender, "&e\u2022 Plugin: " + toggleLabel(plugin.isPluginActive()));
-        send(sender, "&e\u2022 Bot: " + toggleLabel(plugin.isBotActive()));
-        send(sender, "&e\u2022 Debug: " + toggleLabel(cfg.isDebugMode()));
-        send(sender, "");
-        send(sender, "&7Features:");
-        send(sender, "&e  Join: " + toggleLabel(cfg.isEnableJoin())
-                + "  &eLeave: " + toggleLabel(cfg.isEnableLeave())
-                + "  &eChat: " + toggleLabel(cfg.isEnableChat()));
-        send(sender, "&e  Advancement: " + toggleLabel(cfg.isEnableAdvancement())
-                + "  &eDeath: " + toggleLabel(cfg.isEnableDeath())
-                + "  &eWorld: " + toggleLabel(cfg.isEnableWorldSwitch()));
-        send(sender, "&e  Filter: " + toggleLabel(cfg.isEnableChatFilter())
-                + "  &eSudo: " + toggleLabel(cfg.isEnableSudoCommand())
-                + "  &eFirst Join: " + toggleLabel(cfg.isEnableFirstJoin()));
-        send(sender, "");
-        send(sender, "&7Server: &f" + Bukkit.getVersion());
-        send(sender, "&7Players: &f" + Bukkit.getOnlinePlayers().size() + "/" + Bukkit.getMaxPlayers());
+        send(sender, "&6=== TelegramLogger Status ===");
+        sendRaw(sender, "");
+        sendRaw(sender, MessageUtils.colorize("  &7Plugin: " + toggleLabel(plugin.isPluginActive())
+                + "   &7Bot: " + toggleLabel(plugin.isBotActive())
+                + "   &7Debug: " + toggleLabel(cfg.isDebugMode())));
+        sendRaw(sender, "");
+        sendRaw(sender, MessageUtils.colorize("  &6Features:"));
+        sendRaw(sender, MessageUtils.colorize("  &7Join " + toggleLabel(cfg.isEnableJoin())
+                + "  &7Leave " + toggleLabel(cfg.isEnableLeave())
+                + "  &7Chat " + toggleLabel(cfg.isEnableChat())
+                + "  &7Death " + toggleLabel(cfg.isEnableDeath())));
+        sendRaw(sender, MessageUtils.colorize("  &7Advancement " + toggleLabel(cfg.isEnableAdvancement())
+                + "  &7World " + toggleLabel(cfg.isEnableWorldSwitch())
+                + "  &7Filter " + toggleLabel(cfg.isEnableChatFilter())));
+        sendRaw(sender, MessageUtils.colorize("  &7Sudo " + toggleLabel(cfg.isEnableSudoCommand())
+                + "  &7FirstJoin " + toggleLabel(cfg.isEnableFirstJoin())
+                + "  &7AntiFlood " + toggleLabel(cfg.isAntiFloodEnabled())));
+        sendRaw(sender, "");
+        sendRaw(sender, MessageUtils.colorize("  &7Server: &f" + Bukkit.getVersion()));
+        sendRaw(sender, MessageUtils.colorize("  &7Players: &f" + Bukkit.getOnlinePlayers().size()
+                + "/" + Bukkit.getMaxPlayers()));
     }
 
     private String toggleLabel(boolean on) {
@@ -147,7 +144,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     private void doAdmin(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            send(sender, "&c&lUsage: &e/tl admin <add|remove|list>");
+            send(sender, "&cUsage: &e/tl admin <add|remove|list>");
             return;
         }
 
@@ -156,13 +153,13 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             case "remove": doAdminRemove(sender, args); break;
             case "list":  doAdminList(sender); break;
             default:
-                send(sender, "&c&l\u274C Unknown: use add, remove, or list");
+                send(sender, "&cUnknown: use add, remove, or list");
         }
     }
 
     private void doAdminAdd(CommandSender sender, String[] args) {
         if (args.length < 4) {
-            send(sender, "&c&lUsage: &e/tl admin add <telegram_id> <name>");
+            send(sender, "&cUsage: &e/tl admin add <telegram_id> <name>");
             return;
         }
 
@@ -172,23 +169,23 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         try {
             Long.parseLong(id);
         } catch (NumberFormatException e) {
-            send(sender, "&c&l\u274C Invalid Telegram ID (must be a number)");
+            send(sender, "&cInvalid Telegram ID (must be a number)");
             return;
         }
 
         AdminManager admins = plugin.getAdminManager();
         if (admins.isRegistered(id)) {
-            send(sender, "&c&l\u274C ID &e" + id + " &cis already registered!");
+            send(sender, "&cID &e" + id + " &cis already registered!");
             return;
         }
 
         admins.addAdmin(id, name);
-        send(sender, "&a&l\uD83D\uDC51 Admin &e" + name + " &aadded! (ID: " + id + ")");
+        send(sender, "&aAdmin &e" + name + " &aadded! (ID: " + id + ")");
     }
 
     private void doAdminRemove(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            send(sender, "&c&lUsage: &e/tl admin remove <telegram_id>");
+            send(sender, "&cUsage: &e/tl admin remove <telegram_id>");
             return;
         }
 
@@ -197,12 +194,12 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         String name = admins.getName(id);
 
         if (name == null) {
-            send(sender, "&c&l\u274C ID &e" + id + " &cis not registered!");
+            send(sender, "&cID &e" + id + " &cis not registered!");
             return;
         }
 
         admins.removeAdmin(id);
-        send(sender, "&c&l\uD83D\uDC51 Admin &e" + name + " &cremoved!");
+        send(sender, "&cAdmin &e" + name + " &cremoved!");
     }
 
     private void doAdminList(CommandSender sender) {
@@ -210,38 +207,37 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         Set<Map.Entry<String, JsonElement>> list = admins.getAll();
 
         if (list.isEmpty()) {
-            send(sender, "&c&l\u274C No admins registered!");
+            send(sender, "&cNo admins registered!");
             return;
         }
 
-        send(sender, "&6&l=== Registered Admins (" + list.size() + ") ===");
+        send(sender, "&6Registered Admins (" + list.size() + "):");
         for (Map.Entry<String, JsonElement> entry : list) {
             JsonObject obj = entry.getValue().getAsJsonObject();
-            send(sender, "&e" + obj.get("name").getAsString()
-                    + " &7(ID: &f" + entry.getKey() + "&7)");
+            sendRaw(sender, MessageUtils.colorize("  &e" + obj.get("name").getAsString()
+                    + " &7(ID: &f" + entry.getKey() + "&7)"));
         }
     }
 
     private void showHelp(CommandSender sender) {
-        String[] help = {
-            "&6&l=== TelegramLogger v" + TelegramLogger.PLUGIN_VERSION + " ===",
-            "&e/tl reload &7- &fReload configuration",
-            "&e/tl start &7- &fStart message forwarding",
-            "&e/tl stop &7- &fStop message forwarding",
-            "&e/tl stats &7- &fView statistics",
-            "&e/tl status &7- &fPlugin status",
-            "&e/tl debug &7- &fToggle debug mode",
-            "&e/tl admin add <id> <name> &7- &fAdd admin",
-            "&e/tl admin remove <id> &7- &fRemove admin",
-            "&e/tl admin list &7- &fList admins",
-            "&e/tl help &7- &fThis help"
+        send(sender, "&6=== TelegramLogger v" + TelegramLogger.PLUGIN_VERSION + " ===");
+        sendRaw(sender, "");
+        String[] lines = {
+            "  &e/tl reload &8- &7Reload configuration",
+            "  &e/tl start &8- &7Start message forwarding",
+            "  &e/tl stop &8- &7Stop message forwarding",
+            "  &e/tl stats &8- &7View statistics",
+            "  &e/tl status &8- &7Plugin status",
+            "  &e/tl debug &8- &7Toggle debug mode",
+            "  &e/tl admin add <id> <name> &8- &7Add admin",
+            "  &e/tl admin remove <id> &8- &7Remove admin",
+            "  &e/tl admin list &8- &7List admins",
+            "  &e/tl help &8- &7This help"
         };
-        for (String line : help) {
-            send(sender, line);
+        for (String line : lines) {
+            sendRaw(sender, MessageUtils.colorize(line));
         }
     }
-
-    // ─── Tab completion ─────────────────────────────────
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {

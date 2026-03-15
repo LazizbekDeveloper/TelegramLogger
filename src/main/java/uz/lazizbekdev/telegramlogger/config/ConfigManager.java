@@ -83,6 +83,9 @@ public class ConfigManager {
     private boolean sudoShowOutput = true;
     private List<String> sudoBlacklist = new ArrayList<>();
 
+    // Prefix replacements
+    private Map<String, String> prefixReplacements = new LinkedHashMap<>();
+
     // Anti-flood
     private boolean antiFloodEnabled = true;
     private int antiFloodMaxMessages = 20;
@@ -191,6 +194,14 @@ public class ConfigManager {
         sudoShowOutput = cfg.getBoolean("sudo_show_output", true);
         sudoBlacklist = cfg.getStringList("sudo_blacklist").stream()
                 .map(String::toLowerCase).collect(Collectors.toList());
+
+        prefixReplacements = new LinkedHashMap<>();
+        if (cfg.isConfigurationSection("prefix_replacements")) {
+            for (String key : cfg.getConfigurationSection("prefix_replacements").getKeys(false)) {
+                String value = cfg.getString("prefix_replacements." + key, "");
+                prefixReplacements.put(key, value);
+            }
+        }
 
         antiFloodEnabled = cfg.getBoolean("anti_flood_enabled", true);
         antiFloodMaxMessages = cfg.getInt("anti_flood_max_messages", 20);
@@ -381,4 +392,5 @@ public class ConfigManager {
     public long getAntiFloodWindowSeconds() { return antiFloodWindowSeconds; }
 
     public String getErrorNotAdmin() { return errorNotAdmin; }
+    public Map<String, String> getPrefixReplacements() { return prefixReplacements; }
 }

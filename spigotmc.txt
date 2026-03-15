@@ -1,0 +1,1016 @@
+[CENTER]
+[SIZE=7][B]TelegramLogger[/B][/SIZE]
+[SIZE=4]Connect your Minecraft server with Telegram![/SIZE]
+
+[IMG]https://img.shields.io/badge/Java-8%2B-orange[/IMG] [IMG]https://img.shields.io/badge/Spigot-1.16--1.21-yellow[/IMG] [IMG]https://img.shields.io/badge/version-5.0.1-brightgreen[/IMG] [IMG]https://img.shields.io/badge/License-MIT-blue.svg[/IMG]
+
+Monitor all server activities in real-time through your Telegram group or channel.
+[URL='https://github.com/LazizbekDeveloper/TelegramLogger'][B]GitHub[/B][/URL] | [URL='https://t.me/LazizbekDev'][B]Telegram[/B][/URL] | [URL='https://t.me/LazizbekDev_Blog'][B]Updates[/B][/URL]
+[/CENTER]
+
+
+[SIZE=6][B]Features Overview[/B][/SIZE]
+
+[SIZE=5][B]Real-time Event Forwarding[/B][/SIZE]
+[LIST]
+[*][B]Player Join/Leave[/B] — Instant notifications with online player count
+[*][B]First Join Detection[/B] — Special welcome messages for new players
+[*][B]Chat Monitoring[/B] — All in-game chat forwarded to Telegram with HTML formatting
+[*][B]Death Tracking[/B] — Detailed death messages including killer information
+[*][B]Advancement System[/B] — Player achievement notifications (recipe unlocks filtered out)
+[*][B]World Monitoring[/B] — Dimension change tracking (Overworld, Nether, End, custom worlds)
+[*][B]Command Logging[/B] — Monitor command executions with configurable filtering
+[*][B]Server Start/Stop[/B] — Notifications when the server starts or shuts down
+[/LIST]
+
+[SIZE=5][B]Telegram Integration[/B][/SIZE]
+[LIST]
+[*][B]Two-Way Chat[/B] — Send messages from Telegram directly to Minecraft
+[*][B]Forum Thread Support[/B] — Organize messages in Telegram forum topics
+[*][B]Remote Server Commands[/B] — Execute any server command via /sudo with full output capture
+[*][B]Server Status[/B] — Check server status, TPS, memory, and online players from Telegram
+[*][B]Admin System[/B] — Register Telegram admins with persistent storage
+[*][B]HTML Formatting[/B] — Rich message formatting with bold, italic, code blocks, and blockquotes
+[/LIST]
+
+[SIZE=5][B]Protection and Reliability[/B][/SIZE]
+[LIST]
+[*][B]Anti-Flood[/B] — Rate limiting prevents message flooding in both directions
+[*][B]Config Auto-Restore[/B] — Corrupt config files are backed up and automatically regenerated
+[*][B]Chat Filtering[/B] — Block unwanted words with admin notifications
+[*][B]Sudo Blacklist[/B] — Prevent dangerous commands from being executed remotely
+[*][B]Duplicate Message Prevention[/B] — Polling guard eliminates message duplication
+[/LIST]
+
+
+[SIZE=6][B]What's New in v5.0.0[/B][/SIZE]
+
+[SIZE=5][COLOR=rgb(46, 204, 113)][B]Bug Fixes[/B][/COLOR][/SIZE]
+[LIST]
+[*][B]Fixed duplicate Telegram messages[/B] — Messages from Telegram were sometimes delivered 2-3 times to Minecraft. Root cause was overlapping long-poll requests. Fixed with an atomic polling guard.
+[*][B]Fixed /sudo command crashes[/B] — The sudo command would crash in non-forum groups because it tried to access message_thread_id even when it didn't exist. Now handles missing thread IDs gracefully.
+[*][B]Fixed /sudo not showing output[/B] — Previously, /sudo plugins would say "executed successfully" but show no output. Now captures and displays full command output in Telegram.
+[*][B]Fixed multi-line message prefix spam[/B] — Multi-line messages from Telegram had the plugin prefix prepended to every line. Now the prefix is applied only once.
+[*][B]Fixed HTML entity corruption[/B] — HTML entities like &lt; were being corrupted by the color code stripper. Now HTML entities are preserved correctly through the entire message pipeline.
+[*][B]Fixed /reload causing Telegram message flood[/B] — Using /reload from Telegram caused an infinite loop. Reload is now only available in-game.
+[*][B]Fixed /sudo crashing with vanilla commands[/B] — Now uses console sender with logger capture for reliable command output.
+[*][B]Fixed chat mention plugin garbage in Telegram[/B] — Plugin-injected component tags are now cleaned before forwarding.
+[/LIST]
+
+[SIZE=5][COLOR=rgb(52, 152, 219)][B]New Features[/B][/COLOR][/SIZE]
+[LIST]
+[*][B]Server Start/Stop Notifications[/B] — Get notified in Telegram when your server starts or stops
+[*][B]First Join Detection[/B] — Special welcome messages for players joining for the first time
+[*][B]Anti-Flood System[/B] — Configurable rate limiting prevents message flooding
+[*][B]Sudo Output Capture[/B] — /sudo commands now show their full output in the Telegram response
+[*][B]Sudo Blacklist[/B] — Block dangerous commands (stop, op, ban-ip, etc.) from remote execution
+[*][B]TPS Command[/B] — Check server TPS and memory usage from Telegram with /tps
+[*][B]Config Auto-Restore[/B] — If your config becomes corrupt, the plugin automatically backs it up, creates a fresh config, and migrates recoverable values
+[*][B]Prefix Replacements[/B] — Map ugly in-game rank prefixes to clean text for Telegram messages via prefix_replacements config
+[*][B]Prefix/Suffix Placeholders[/B] — New %prefix% and %suffix% placeholders extract rank tags from player display names
+[*][B]Chat Component Cleaning[/B] — Automatically strips plugin-injected component tags from chat messages
+[/LIST]
+
+[SIZE=5][COLOR=rgb(155, 89, 182)][B]Code Improvements[/B][/COLOR][/SIZE]
+[LIST]
+[*][B]Full code restructuring[/B] — Monolithic 3000-line file split into 11 focused classes across 6 packages
+[*][B]Clean architecture[/B] — Separated concerns: config, telegram API, event handling, commands, data management
+[*][B]Better error handling[/B] — Graceful failure instead of silent crashes
+[*][B]HTML escaping[/B] — User input is properly escaped to prevent HTML injection in Telegram messages
+[/LIST]
+
+
+[SIZE=6][B]Requirements[/B][/SIZE]
+[LIST]
+[*]Java 8 or newer
+[*]Spigot or Paper 1.16.x - 1.21.x
+[*]Telegram Bot Token (from [URL='https://t.me/botfather']@BotFather[/URL])
+[*]Telegram Chat ID (group or channel numeric ID)
+[*]Thread ID (only if using forum topics)
+[/LIST]
+
+
+[SIZE=6][B]Installation Guide[/B][/SIZE]
+
+[SIZE=5][B]Step 1: Download and Install[/B][/SIZE]
+[LIST=1]
+[*]Download the latest [B]TelegramLogger-5.0.1.jar[/B] from [URL='https://github.com/LazizbekDeveloper/TelegramLogger/releases']Releases[/URL]
+[*]Place the .jar file in your server's [ICODE]plugins/[/ICODE] folder
+[*]Start the server once to generate the default configuration
+[*]Stop the server to edit the configuration
+[/LIST]
+
+[CODE]
+plugins/
+  TelegramLogger-5.0.1.jar
+  TelegramLogger/
+    config.yml          <-- Edit this file
+    data.json           <-- Auto-generated statistics
+    admins.json         <-- Auto-generated admin registry
+[/CODE]
+
+[SIZE=5][B]Step 2: Create a Telegram Bot[/B][/SIZE]
+[LIST=1]
+[*]Open Telegram and find [URL='https://t.me/botfather']@BotFather[/URL]
+[*]Send [ICODE]/newbot[/ICODE] and follow the prompts
+[*]Copy the [B]API Token[/B] that BotFather gives you (looks like [ICODE]123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11[/ICODE])
+[/LIST]
+
+[B]Important Bot Settings[/B] (send these to BotFather):
+[CODE]
+/setprivacy    -> Choose your bot -> Disable
+/setjoingroups -> Choose your bot -> Enable
+[/CODE]
+
+(Optional) Set bot commands for a nice command menu:
+[CODE]
+/setcommands -> Choose your bot -> Paste this:
+status - Show server status
+stats - Message statistics
+players - Online players
+start - Start forwarding
+stop - Stop forwarding
+debug - Toggle debug mode
+tps - Server performance
+sudo - Execute server command
+help - Show commands
+[/CODE]
+
+[SIZE=5][B]Step 3: Get Your Chat ID[/B][/SIZE]
+[LIST=1]
+[*]Create a Telegram group (or use an existing one)
+[*]Add your bot to the group [B]as an administrator[/B]
+[*]Add [URL='https://t.me/rawdatabot']@RawDataBot[/URL] to the group temporarily
+[*]Look for [ICODE]"chat":{"id": -123456789}[/ICODE] in its response — that number is your [B]Chat ID[/B]
+[*]Remove RawDataBot from the group
+[/LIST]
+
+[B]For Forum Groups (with topics):[/B]
+Send a message in the specific topic where you want notifications. RawDataBot will show a [ICODE]"message_thread_id"[/ICODE] — that's your [B]Thread ID[/B].
+
+[SIZE=5][B]Step 4: Configure the Plugin[/B][/SIZE]
+
+Edit [ICODE]plugins/TelegramLogger/config.yml[/ICODE]:
+[CODE=YAML]
+# Required: Your bot token from BotFather
+bot_token: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+
+# Required: Your group/channel chat ID
+chat_id: "-1001234567890"
+
+# Optional: Thread ID for forum topics
+thread_id: "123"
+send_to_thread: false
+
+# Enable two-way chat (Telegram messages appear in Minecraft)
+send_telegram_messages_to_game: true
+[/CODE]
+
+Save the file and run [ICODE]/tl reload[/ICODE] in-game, or restart the server.
+
+[B]Register yourself as an admin[/B] (required for Telegram commands):
+[CODE]/tl admin add YOUR_TELEGRAM_USER_ID YourName[/CODE]
+To find your Telegram user ID, send a message in the group with RawDataBot and look for [ICODE]"from":{"id": 123456}[/ICODE].
+
+
+[SIZE=6][B]Configuration Reference[/B][/SIZE]
+
+[SPOILER="Bot Configuration"]
+[CODE=YAML]
+bot_token: "BOT_TOKEN"                    # Your Telegram bot API token
+chat_id: "CHAT_ID"                        # Target group/channel ID
+thread_id: "THREAD_ID"                    # Forum topic thread ID
+send_to_thread: false                     # Enable forum topic support
+send_telegram_messages_to_game: false     # Forward Telegram messages to Minecraft
+[/CODE]
+[/SPOILER]
+
+[SPOILER="Message Prefix"]
+[CODE=YAML]
+plugin_prefix: "&6&lTelegramLogger&7 -> &r&a"   # In-game message prefix (supports color codes)
+telegram_game_message: "&7[&9TG&7] &c%name% &8>> &f%message%"   # Format for TG->MC messages
+[/CODE]
+The [ICODE]telegram_game_message[/ICODE] template controls how Telegram messages appear in Minecraft.
+Available placeholders: [ICODE]%name%[/ICODE] (sender name), [ICODE]%message%[/ICODE] (message text).
+[/SPOILER]
+
+[SPOILER="Prefix Replacements"]
+[CODE=YAML]
+prefix_replacements:
+  "VIP": "[VIP]"
+  "ADMIN": "[ADMIN]"
+[/CODE]
+Replace ugly in-game rank prefixes with clean text for Telegram messages. The key is the text to find in the player's display name, and the value is what to replace it with. Use the [ICODE]%prefix%[/ICODE] placeholder in message templates to show the replaced prefix.
+[/SPOILER]
+
+[SPOILER="Server Start/Stop Notifications"]
+[CODE=YAML]
+enable_server_start_stop: true
+server_start_message: "<blockquote>Server started!\nVersion: %version% | Max Players: %max%</blockquote>"
+server_stop_message: "<blockquote>Server stopped!</blockquote>"
+[/CODE]
+Sends a notification to Telegram when the server starts or shuts down.
+Placeholders: [ICODE]%version%[/ICODE], [ICODE]%max%[/ICODE].
+[/SPOILER]
+
+[SPOILER="Join/Leave Messages"]
+[CODE=YAML]
+enable_join: true
+join_message: "<blockquote>%player% joined the game! (%online%/%max%)</blockquote>"
+
+enable_leave: true
+leave_message: "<blockquote>%player% left the game! (%online%/%max%)</blockquote>"
+[/CODE]
+[/SPOILER]
+
+[SPOILER="First Join (New Player Welcome)"]
+[CODE=YAML]
+enable_first_join: true
+first_join_message: "<blockquote>%player% joined for the first time! Welcome! (%online%/%max%)</blockquote>"
+[/CODE]
+Triggers only when a player joins the server for the very first time (detected via [ICODE]player.hasPlayedBefore()[/ICODE]).
+[/SPOILER]
+
+[SPOILER="Chat Messages"]
+[CODE=YAML]
+enable_chat: true
+chat_message: "<b>%player%</b> -> %message%"
+[/CODE]
+All in-game chat messages are forwarded to Telegram. User messages are HTML-escaped to prevent injection.
+[/SPOILER]
+
+[SPOILER="Advancement Messages"]
+[CODE=YAML]
+enable_advancement: true
+advancement_message: "<blockquote>%player% earned [%advancement%] (%online%/%max%)</blockquote>"
+[/CODE]
+Recipe unlock advancements are automatically filtered out.
+[/SPOILER]
+
+[SPOILER="Death Messages"]
+[CODE=YAML]
+enable_death: true
+death_message: "<blockquote>%death_message% (%online%/%max%)</blockquote>"
+[/CODE]
+Includes the full Minecraft death message with killer information.
+[/SPOILER]
+
+[SPOILER="World Switch Messages"]
+[CODE=YAML]
+enable_world_switch: true
+world_switch_message: "<blockquote>%player% moved: %from_world% -> %to_world% (%online%/%max%)</blockquote>"
+[/CODE]
+
+World names are automatically formatted:
+[LIST]
+[*][ICODE]world[/ICODE] -> Overworld
+[*][ICODE]world_nether[/ICODE] -> The Nether
+[*][ICODE]world_the_end[/ICODE] -> The End
+[*][ICODE]spawn[/ICODE] -> Spawn
+[*][ICODE]lobby[/ICODE] -> Lobby
+[*]Custom worlds -> Auto-formatted name
+[/LIST]
+[/SPOILER]
+
+[SPOILER="Chat Filter"]
+[CODE=YAML]
+enable_chat_filter: true
+filtered_words:
+  - "badword1"
+  - "badword2"
+  - "offensive_term"
+filtered_message: "<blockquote>%player% used a filtered word. (%online%/%max%)</blockquote>"
+[/CODE]
+
+When a filtered word is detected:
+[LIST=1]
+[*]The original message is [B]not[/B] forwarded to Telegram
+[*]A filtered notification is sent instead
+[*]In-game admins receive a warning
+[/LIST]
+[/SPOILER]
+
+[SPOILER="Command Execution Logging"]
+[CODE=YAML]
+enable_send_command_executes: false
+command_execute_message: "<blockquote>%player% -> %command% (%online%/%max%)</blockquote>"
+command_executes_chat_id: "CHAT_ID"           # Can be different from main chat
+send_command_executes_to_thread: false
+command_executes_group_thread_id: "THREAD_ID"
+ignored_commands:
+  - "/login"
+  - "/register"
+  - "/l"
+  - "/reg"
+[/CODE]
+Commands in the [ICODE]ignored_commands[/ICODE] list will not be logged. You can use a separate Telegram chat/thread for command logs to keep your main chat clean.
+[/SPOILER]
+
+[SPOILER="Telegram Sudo Command"]
+[CODE=YAML]
+enable_sudo_command: false
+sudo_show_output: true
+sudo_blacklist:
+  - "stop"
+  - "restart"
+  - "op"
+  - "deop"
+  - "ban-ip"
+[/CODE]
+
+When enabled, registered admins can execute server commands from Telegram:
+[CODE]
+/sudo list          -> Shows online players
+/sudo plugins       -> Lists installed plugins with output
+/sudo kill Steve    -> Kills the player Steve
+/sudo say Hello!    -> Broadcasts a message
+/sudo gamemode creative Steve -> Changes gamemode
+[/CODE]
+
+The response shows:
+[LIST]
+[*]Whether the command succeeded
+[*]The actual command that was executed
+[*]Which admin ran it
+[*]The full command output (if [ICODE]sudo_show_output: true[/ICODE])
+[/LIST]
+Commands in [ICODE]sudo_blacklist[/ICODE] are blocked from execution for safety.
+[/SPOILER]
+
+[SPOILER="Anti-Flood Protection"]
+[CODE=YAML]
+anti_flood_enabled: true
+anti_flood_max_messages: 20     # Maximum messages allowed per window
+anti_flood_window_seconds: 10   # Window duration in seconds
+[/CODE]
+
+Prevents flooding in situations like:
+[LIST]
+[*]Mass player join/leave events
+[*]Chat spam
+[*]Rapid advancement unlocks
+[*]Event storms
+[/LIST]
+Messages that exceed the rate limit are silently dropped.
+[/SPOILER]
+
+[SPOILER="Debug Mode"]
+[CODE=YAML]
+debug_mode: false
+[/CODE]
+Enable with [ICODE]/tl debug[/ICODE] in-game or [ICODE]/debug[/ICODE] from Telegram. Shows detailed logs for message processing, Telegram API calls, config loading, rate limiting decisions, and admin checks.
+[/SPOILER]
+
+
+[SIZE=6][B]Commands Reference[/B][/SIZE]
+
+[SIZE=5][B]In-Game Commands[/B][/SIZE]
+All commands require the [ICODE]telegramlogger.admin[/ICODE] permission (default: op).
+
+[TABLE]
+[TR]
+[TH]Command[/TH]
+[TH]Alias[/TH]
+[TH]Description[/TH]
+[/TR]
+[TR]
+[TD]/telegramlogger reload[/TD]
+[TD]/tl reload[/TD]
+[TD]Reload configuration from disk[/TD]
+[/TR]
+[TR]
+[TD]/telegramlogger start[/TD]
+[TD]/tl start[/TD]
+[TD]Start message forwarding[/TD]
+[/TR]
+[TR]
+[TD]/telegramlogger stop[/TD]
+[TD]/tl stop[/TD]
+[TD]Stop message forwarding[/TD]
+[/TR]
+[TR]
+[TD]/telegramlogger stats[/TD]
+[TD]/tl stats[/TD]
+[TD]View detailed message statistics[/TD]
+[/TR]
+[TR]
+[TD]/telegramlogger status[/TD]
+[TD]/tl status[/TD]
+[TD]Show plugin and bot status[/TD]
+[/TR]
+[TR]
+[TD]/telegramlogger debug[/TD]
+[TD]/tl debug[/TD]
+[TD]Toggle debug mode[/TD]
+[/TR]
+[TR]
+[TD]/telegramlogger admin add <id> <name>[/TD]
+[TD]/tl admin add <id> <name>[/TD]
+[TD]Register a Telegram admin[/TD]
+[/TR]
+[TR]
+[TD]/telegramlogger admin remove <id>[/TD]
+[TD]/tl admin remove <id>[/TD]
+[TD]Remove a Telegram admin[/TD]
+[/TR]
+[TR]
+[TD]/telegramlogger admin list[/TD]
+[TD]/tl admin list[/TD]
+[TD]List all registered admins[/TD]
+[/TR]
+[TR]
+[TD]/telegramlogger help[/TD]
+[TD]/tl help[/TD]
+[TD]Show help message[/TD]
+[/TR]
+[/TABLE]
+
+[SIZE=5][B]Telegram Commands[/B][/SIZE]
+All commands require the sender to be a registered admin.
+
+[TABLE]
+[TR]
+[TH]Command[/TH]
+[TH]Description[/TH]
+[/TR]
+[TR]
+[TD]/status[/TD]
+[TD]Show plugin status, features, server info, and memory[/TD]
+[/TR]
+[TR]
+[TD]/stats[/TD]
+[TD]View message statistics with counts and percentages[/TD]
+[/TR]
+[TR]
+[TD]/players or /online[/TD]
+[TD]List online players (up to 20, with admin crowns)[/TD]
+[/TR]
+[TR]
+[TD]/tps[/TD]
+[TD]Show server TPS (1m/5m/15m) and memory usage[/TD]
+[/TR]
+[TR]
+[TD]/start[/TD]
+[TD]Start message forwarding[/TD]
+[/TR]
+[TR]
+[TD]/stop[/TD]
+[TD]Stop message forwarding[/TD]
+[/TR]
+[TR]
+[TD]/debug[/TD]
+[TD]Toggle debug mode[/TD]
+[/TR]
+[TR]
+[TD]/sudo <command>[/TD]
+[TD]Execute a server command (if enabled)[/TD]
+[/TR]
+[TR]
+[TD]/help[/TD]
+[TD]Show available commands[/TD]
+[/TR]
+[/TABLE]
+
+
+[SIZE=6][B]Admin Management[/B][/SIZE]
+
+Admins are Telegram users who can:
+[LIST]
+[*]Send messages to the Minecraft chat from Telegram
+[*]Use Telegram commands (/status, /stats, etc.)
+[*]Execute server commands via /sudo (if enabled)
+[/LIST]
+
+[B]Registering an Admin:[/B]
+[CODE]/tl admin add 123456789 Steve[/CODE]
+Where [ICODE]123456789[/ICODE] is the Telegram user ID and [ICODE]Steve[/ICODE] is a display name.
+
+[B]Removing an Admin:[/B]
+[CODE]/tl admin remove 123456789[/CODE]
+
+[B]Listing Admins:[/B]
+[CODE]/tl admin list[/CODE]
+
+Admin data is stored in [ICODE]plugins/TelegramLogger/admins.json[/ICODE] and persists across restarts.
+
+[COLOR=rgb(231, 76, 60)][B]Important:[/B][/COLOR] An admin must be both:
+[LIST=1]
+[*]Registered via [ICODE]/tl admin add[/ICODE]
+[*]A group administrator or creator in the Telegram group
+[/LIST]
+
+
+[SIZE=6][B]Message Placeholders[/B][/SIZE]
+
+Available placeholders vary by message type:
+
+[TABLE]
+[TR]
+[TH]Placeholder[/TH]
+[TH]Available In[/TH]
+[TH]Description[/TH]
+[/TR]
+[TR]
+[TD]%player%[/TD]
+[TD]All player events[/TD]
+[TD]Player username[/TD]
+[/TR]
+[TR]
+[TD]%displayname%[/TD]
+[TD]All player events[/TD]
+[TD]Player display name (may include colors)[/TD]
+[/TR]
+[TR]
+[TD]%prefix%[/TD]
+[TD]All player events[/TD]
+[TD]Player rank prefix (extracted from display name)[/TD]
+[/TR]
+[TR]
+[TD]%suffix%[/TD]
+[TD]All player events[/TD]
+[TD]Player rank suffix (extracted from display name)[/TD]
+[/TR]
+[TR]
+[TD]%online%[/TD]
+[TD]All events[/TD]
+[TD]Current online player count[/TD]
+[/TR]
+[TR]
+[TD]%max%[/TD]
+[TD]All events[/TD]
+[TD]Maximum player slots[/TD]
+[/TR]
+[TR]
+[TD]%message%[/TD]
+[TD]Chat messages[/TD]
+[TD]The chat message content[/TD]
+[/TR]
+[TR]
+[TD]%command%[/TD]
+[TD]Command logging[/TD]
+[TD]The executed command[/TD]
+[/TR]
+[TR]
+[TD]%death_message%[/TD]
+[TD]Death messages[/TD]
+[TD]Full death message from Minecraft[/TD]
+[/TR]
+[TR]
+[TD]%advancement%[/TD]
+[TD]Advancement messages[/TD]
+[TD]Achievement name[/TD]
+[/TR]
+[TR]
+[TD]%from_world%[/TD]
+[TD]World switch[/TD]
+[TD]Previous world (with emoji)[/TD]
+[/TR]
+[TR]
+[TD]%to_world%[/TD]
+[TD]World switch[/TD]
+[TD]New world (with emoji)[/TD]
+[/TR]
+[TR]
+[TD]%version%[/TD]
+[TD]Server start[/TD]
+[TD]Server version string[/TD]
+[/TR]
+[TR]
+[TD]%name%[/TD]
+[TD]Telegram->MC messages[/TD]
+[TD]Telegram sender name[/TD]
+[/TR]
+[/TABLE]
+
+
+[SIZE=6][B]HTML Formatting Guide[/B][/SIZE]
+
+Telegram supports HTML formatting in messages. Use these tags in your message templates:
+
+[CODE=HTML]
+<b>Bold text</b>
+<i>Italic text</i>
+<u>Underlined text</u>
+<s>Strikethrough text</s>
+<code>Monospace/code text</code>
+<pre>Preformatted block</pre>
+<blockquote>Quoted text block</blockquote>
+<a href="https://example.com">Link text</a>
+[/CODE]
+
+[SPOILER="Example Custom Messages"]
+[CODE=YAML]
+# Fancy join message
+join_message: "<blockquote><b>%player%</b> has joined!\nPlayers: <code>%online%/%max%</code></blockquote>"
+
+# Death message with formatting
+death_message: "<blockquote><i>%death_message%</i>\n<code>%online%/%max%</code></blockquote>"
+
+# Minimal chat format
+chat_message: "<b>%player%</b>: %message%"
+
+# Detailed command log
+command_execute_message: "<b>%player%</b> ran: <code>%command%</code>"
+[/CODE]
+[/SPOILER]
+
+
+[SIZE=6][B]Forum Thread Organization[/B][/SIZE]
+
+Telegram forum groups (supergroups with topics) let you organize different event types into separate threads:
+
+[CODE=YAML]
+# Main events go to one thread
+send_to_thread: true
+thread_id: "12345"
+
+# Command logs go to a different thread (or even a different group)
+enable_send_command_executes: true
+command_executes_chat_id: "-1001234567890"
+send_command_executes_to_thread: true
+command_executes_group_thread_id: "67890"
+[/CODE]
+
+This keeps your server events organized and easy to navigate.
+
+
+[SIZE=6][B]Statistics and Metrics[/B][/SIZE]
+
+The plugin tracks comprehensive statistics:
+
+[TABLE]
+[TR]
+[TH]Metric[/TH]
+[TH]Description[/TH]
+[/TR]
+[TR]
+[TD]Total Messages[/TD]
+[TD]All messages sent to Telegram[/TD]
+[/TR]
+[TR]
+[TD]Join Messages[/TD]
+[TD]Player join event count[/TD]
+[/TR]
+[TR]
+[TD]Leave Messages[/TD]
+[TD]Player leave event count[/TD]
+[/TR]
+[TR]
+[TD]Chat Messages[/TD]
+[TD]Chat messages forwarded[/TD]
+[/TR]
+[TR]
+[TD]Advancement Messages[/TD]
+[TD]Achievements forwarded[/TD]
+[/TR]
+[TR]
+[TD]Death Messages[/TD]
+[TD]Death events forwarded[/TD]
+[/TR]
+[TR]
+[TD]World Switch Messages[/TD]
+[TD]Dimension changes forwarded[/TD]
+[/TR]
+[TR]
+[TD]Filtered Messages[/TD]
+[TD]Messages blocked by chat filter[/TD]
+[/TR]
+[TR]
+[TD]First Join Messages[/TD]
+[TD]New player welcome messages[/TD]
+[/TR]
+[TR]
+[TD]Command Messages[/TD]
+[TD]Commands logged[/TD]
+[/TR]
+[TR]
+[TD]Server Start Count[/TD]
+[TD]Number of server starts logged[/TD]
+[/TR]
+[/TABLE]
+
+View statistics:
+[LIST]
+[*][B]In-game:[/B] [ICODE]/tl stats[/ICODE] — Shows progress bars and percentages
+[*][B]Telegram:[/B] [ICODE]/stats[/ICODE] — Shows clean HTML-formatted statistics
+[/LIST]
+
+Statistics are stored in [ICODE]plugins/TelegramLogger/data.json[/ICODE] and persist across restarts.
+
+
+[SIZE=6][B]Config Auto-Restore System[/B][/SIZE]
+
+If your [ICODE]config.yml[/ICODE] becomes corrupt (invalid YAML, encoding issues, etc.), the plugin automatically:
+
+[LIST=1]
+[*][B]Detects[/B] the corrupt file during loading
+[*][B]Backs up[/B] the broken file as [ICODE]config.yml.broken.<timestamp>[/ICODE]
+[*][B]Creates[/B] a fresh [ICODE]config.yml[/ICODE] with all default values
+[*][B]Recovers[/B] any valid key: value pairs from the broken file
+[*][B]Merges[/B] the recovered values into the new config
+[/LIST]
+
+This means you never lose your bot token, chat IDs, or custom messages due to a YAML syntax error.
+
+
+[SIZE=6][B]Architecture[/B][/SIZE]
+
+The plugin is organized into clean, modular packages:
+
+[CODE]
+uz.lazizbekdev.telegramlogger/
+|-- TelegramLogger.java              # Main plugin (lifecycle, manager coordination)
+|-- config/
+|   +-- ConfigManager.java           # Config load/save/validate/restore
+|-- telegram/
+|   |-- TelegramAPI.java             # HTTP communication with Telegram Bot API
+|   |-- TelegramHandler.java         # Polling, command routing, message processing
+|-- listeners/
+|   +-- EventListener.java           # All Minecraft event handlers
+|-- commands/
+|   +-- CommandHandler.java          # /telegramlogger command handler + tab complete
+|-- managers/
+|   |-- DataManager.java             # Statistics persistence (data.json)
+|   +-- AdminManager.java            # Admin registry persistence (admins.json)
++-- utils/
+    |-- MessageUtils.java            # Color codes, formatting, placeholders
+    +-- AntiFloodManager.java        # Rate limiting with sliding window
+[/CODE]
+
+
+[SIZE=6][B]Building from Source[/B][/SIZE]
+
+[B]Prerequisites:[/B]
+[LIST]
+[*]Java Development Kit (JDK) 8 or newer
+[*]Apache Maven 3.6+
+[*]Git
+[/LIST]
+
+[B]Build Steps:[/B]
+[CODE]
+# Clone the repository
+git clone https://github.com/LazizbekDeveloper/TelegramLogger.git
+cd TelegramLogger
+
+# Build the plugin
+mvn clean package
+
+# The output JAR will be at:
+# target/TelegramLogger-5.0.1.jar
+[/CODE]
+
+The build process compiles all Java sources against Spigot API 1.16.5, shades Google GSON into the jar (relocated to avoid conflicts), and produces a single self-contained JAR file. The output JAR is ready to use — just drop it in your [ICODE]plugins/[/ICODE] folder.
+
+
+[SIZE=6][B]Troubleshooting[/B][/SIZE]
+
+[SPOILER="Bot Not Responding"]
+[LIST=1]
+[*][B]Check your bot token[/B] — Make sure it's copied correctly from BotFather
+[*][B]Bot must be a group admin[/B] — Add the bot as an administrator in your Telegram group
+[*][B]Verify the chat ID[/B] — Use RawDataBot to confirm the correct group ID
+[*][B]Privacy mode[/B] — Send /setprivacy to BotFather and set it to Disable for your bot
+[*][B]Check /tl status[/B] — Shows if the bot connection is active
+[/LIST]
+[/SPOILER]
+
+[SPOILER="Messages Not Appearing in Telegram"]
+[LIST=1]
+[*][B]Check feature toggles[/B] — Make sure enable_join, enable_chat, etc. are true
+[*][B]Check anti-flood[/B] — If too many events fire at once, some may be rate-limited
+[*][B]Enable debug mode[/B] — Run /tl debug and check console for errors
+[*][B]Verify config is valid[/B] — Run /tl reload and check for error messages
+[/LIST]
+[/SPOILER]
+
+[SPOILER="Messages Not Appearing in Minecraft"]
+[LIST=1]
+[*][B]Enable the feature[/B] — Set [ICODE]send_telegram_messages_to_game: true[/ICODE]
+[*][B]Register as admin[/B] — Use [ICODE]/tl admin add <your_telegram_id> <name>[/ICODE]
+[*][B]Must be group admin[/B] — Your Telegram account must be a group admin AND registered
+[/LIST]
+[/SPOILER]
+
+[SPOILER="/sudo Not Working"]
+[LIST=1]
+[*][B]Enable sudo[/B] — Set [ICODE]enable_sudo_command: true[/ICODE] in config
+[*][B]Check blacklist[/B] — The command might be in [ICODE]sudo_blacklist[/ICODE]
+[*][B]Register as admin[/B] — Must be registered via [ICODE]/tl admin add[/ICODE]
+[*][B]Check output[/B] — The command might execute but produce no visible output
+[/LIST]
+[/SPOILER]
+
+[SPOILER="Duplicate Messages"]
+This was a known issue in v4.x and is fixed in v5.0.0. If you're still experiencing it:
+[LIST=1]
+[*]Make sure you're running v5.0.0 or newer
+[*]Try [ICODE]/tl reload[/ICODE] to restart the polling system
+[/LIST]
+[/SPOILER]
+
+[SPOILER="Forum Thread Issues"]
+[LIST=1]
+[*][B]Thread ID must match[/B] — Use RawDataBot in the specific topic to get the correct thread ID
+[*][B]send_to_thread must be true[/B] — Otherwise thread_id is ignored
+[*][B]Bot must have topic permissions[/B] — Ensure the bot can post in the specific topic
+[/LIST]
+[/SPOILER]
+
+[SPOILER="Config Corrupted"]
+The plugin handles this automatically in v5.0.0:
+[LIST=1]
+[*]The broken config is saved as [ICODE]config.yml.broken.<timestamp>[/ICODE]
+[*]A fresh config is generated
+[*]Recoverable values are migrated
+[/LIST]
+
+You can also manually fix issues by:
+[LIST=1]
+[*]Checking the broken file for YAML syntax errors
+[*]Using a YAML validator (e.g., yamllint.com)
+[*]Common issues: missing quotes, tab characters (use spaces), unclosed strings
+[/LIST]
+[/SPOILER]
+
+
+[SIZE=6][B]FAQ[/B][/SIZE]
+
+[B]Q: Does this plugin work with Paper?[/B]
+A: Yes! TelegramLogger works with any Spigot-based server including Paper, Purpur, and forks.
+
+[B]Q: Can I use this with multiple Telegram groups?[/B]
+A: The main events go to one group/thread. Command logging can go to a separate group via [ICODE]command_executes_chat_id[/ICODE].
+
+[B]Q: Is the bot token stored securely?[/B]
+A: The bot token is stored in config.yml on your server. Make sure your server files are properly secured.
+
+[B]Q: How do I find my Telegram user ID?[/B]
+A: Add [URL='https://t.me/rawdatabot']@RawDataBot[/URL] to a group, send a message, and look for [ICODE]"from":{"id": YOUR_ID}[/ICODE].
+
+[B]Q: Can regular players use Telegram commands?[/B]
+A: No. Only users who are both registered admins AND Telegram group admins can use commands.
+
+[B]Q: Does /sudo have any limitations?[/B]
+A: Yes — commands in sudo_blacklist are blocked. Output is truncated to 3000 characters. The command runs as console (full permissions).
+
+[B]Q: What happens if Telegram is down?[/B]
+A: The plugin gracefully handles API failures. Events continue to be tracked locally. Messages are simply not sent until the API is available again.
+
+[B]Q: How much server performance does this use?[/B]
+A: Minimal. All Telegram communication is asynchronous and runs off the main thread. The anti-flood system prevents excessive API calls.
+
+[B]Q: Can I customize the emoji in world names?[/B]
+A: Currently, world name formatting is built-in. Custom world names are auto-formatted. You can customize the message templates to add your own emoji.
+
+
+[SPOILER="Full Default Configuration"]
+[CODE=YAML]
+# TelegramLogger v5.0.1
+# Developed by LazizbekDev
+# https://t.me/LazizbekDev
+
+# ---------------------
+# Bot Configuration
+# ---------------------
+bot_token: "BOT_TOKEN"
+chat_id: "CHAT_ID"
+thread_id: "THREAD_ID"
+send_to_thread: false
+send_telegram_messages_to_game: false
+
+# ---------------------
+# Message Prefix
+# ---------------------
+plugin_prefix: "&6&lTelegramLogger&7 -> &r&a"
+telegram_game_message: "&7[&9TG&7] &c%name% &8>> &f%message%"
+
+# ---------------------
+# Prefix Replacements
+# ---------------------
+prefix_replacements: {}
+
+# ---------------------
+# Server Start/Stop
+# ---------------------
+enable_server_start_stop: true
+server_start_message: "<blockquote>Server started!\nVersion: %version% | Max Players: %max%</blockquote>"
+server_stop_message: "<blockquote>Server stopped!</blockquote>"
+
+# ---------------------
+# Join Messages
+# ---------------------
+enable_join: true
+join_message: "<blockquote>%player% joined the game! (%online%/%max%)</blockquote>"
+
+# ---------------------
+# First Join
+# ---------------------
+enable_first_join: true
+first_join_message: "<blockquote>%player% joined for the first time! Welcome! (%online%/%max%)</blockquote>"
+
+# ---------------------
+# Leave Messages
+# ---------------------
+enable_leave: true
+leave_message: "<blockquote>%player% left the game! (%online%/%max%)</blockquote>"
+
+# ---------------------
+# Chat Messages
+# ---------------------
+enable_chat: true
+chat_message: "<b>%player%</b> -> %message%"
+
+# ---------------------
+# Advancement Messages
+# ---------------------
+enable_advancement: true
+advancement_message: "<blockquote>%player% earned [%advancement%] (%online%/%max%)</blockquote>"
+
+# ---------------------
+# Death Messages
+# ---------------------
+enable_death: true
+death_message: "<blockquote>%death_message% (%online%/%max%)</blockquote>"
+
+# ---------------------
+# World Switch Messages
+# ---------------------
+enable_world_switch: true
+world_switch_message: "<blockquote>%player% moved: %from_world% -> %to_world% (%online%/%max%)</blockquote>"
+
+# ---------------------
+# Chat Filter
+# ---------------------
+enable_chat_filter: true
+filtered_words:
+  - "badword1"
+  - "badword2"
+filtered_message: "<blockquote>%player% used a filtered word. (%online%/%max%)</blockquote>"
+
+# ---------------------
+# Command Logging
+# ---------------------
+enable_send_command_executes: false
+command_execute_message: "<blockquote>%player% -> %command% (%online%/%max%)</blockquote>"
+command_executes_chat_id: "CHAT_ID"
+send_command_executes_to_thread: false
+command_executes_group_thread_id: "THREAD_ID"
+ignored_commands:
+  - "/login"
+  - "/register"
+  - "/l"
+  - "/reg"
+
+# ---------------------
+# Telegram Sudo Command
+# ---------------------
+enable_sudo_command: false
+sudo_show_output: true
+sudo_blacklist:
+  - "stop"
+  - "restart"
+  - "op"
+  - "deop"
+  - "ban-ip"
+
+# ---------------------
+# Anti-Flood Protection
+# ---------------------
+anti_flood_enabled: true
+anti_flood_max_messages: 20
+anti_flood_window_seconds: 10
+
+# ---------------------
+# Error Messages
+# ---------------------
+error_not_admin: "<blockquote>You are not registered as an admin!</blockquote>"
+
+# ---------------------
+# Debug Mode
+# ---------------------
+debug_mode: false
+
+# ---------------------
+# Plugin Version (DO NOT EDIT)
+# ---------------------
+version: "5.0.1"
+[/CODE]
+[/SPOILER]
+
+
+[SIZE=6][B]Contact & Support[/B][/SIZE]
+[LIST]
+[*][B]Telegram:[/B] [URL='https://t.me/LazizbekDev']@LazizbekDev[/URL]
+[*][B]Updates:[/B] [URL='https://t.me/LazizbekDev_Blog']@LazizbekDev_Blog[/URL]
+[*][B]Issues:[/B] [URL='https://github.com/LazizbekDeveloper/TelegramLogger/issues']GitHub Issues[/URL]
+[*][B]Source:[/B] [URL='https://github.com/LazizbekDeveloper/TelegramLogger']GitHub Repository[/URL]
+[/LIST]
+
+
+[CENTER]
+[SIZE=4][B]MIT License[/B][/SIZE]
+
+[SIZE=3]Developed by [URL='https://t.me/LazizbekDev']LazizbekDev[/URL][/SIZE]
+If you find this plugin helpful, please leave a review and rate it!
+[/CENTER]
