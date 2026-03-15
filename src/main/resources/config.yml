@@ -1,108 +1,135 @@
-# ===========================================
-#        TelegramLogger Configuration
-#        Developer by LazizbekDev
-#        Telegram: https://t.me/LazizbekDev
-# ===========================================
+# TelegramLogger v5.0.0
+# Developed by LazizbekDev
+# https://t.me/LazizbekDev
 
-
-
+# ---------------------
 # Bot Configuration
-# -------------------------------------------
-bot_token: "BOT_TOKEN"  # Your Telegram bot token
-chat_id: "CHAT_ID"    # Your Telegram chat ID
-thread_id: "THREAD_ID"  # Thread ID (for forum topics)
-send_to_thread: false   # Enable this if messages should be sent to a thread group
-send_telegram_messages_to_game: false  # If a message is written to the Telegram group by an admin, it should be sent to minecraft chat, turn it on!
+# ---------------------
+bot_token: "BOT_TOKEN"                          # Your Telegram Bot API token from @BotFather
+chat_id: "CHAT_ID"                              # Target Telegram group/channel ID
+thread_id: "THREAD_ID"                          # Forum topic thread ID (only if send_to_thread is true)
+send_to_thread: false                           # Send messages to a specific forum topic thread
+send_telegram_messages_to_game: false           # Forward Telegram admin messages to Minecraft chat
 
-
-
+# ---------------------
 # Message Prefix
-# -------------------------------------------
+# ---------------------
 plugin_prefix: "&6&lTelegramLogger&7 ➜ &r&a"
 telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"
 # Available placeholders: %name%, %message%
 
+# ---------------------
+# Server Start/Stop
+# ---------------------
+enable_server_start_stop: true
+server_start_message: "<blockquote>🟢 <b>Server started!</b>\nVersion: %version% | Max Players: %max%</blockquote>"
+server_stop_message: "<blockquote>🔴 <b>Server stopped!</b></blockquote>"
+# Available placeholders: %version%, %max%
 
-
+# ---------------------
 # Join Messages
-# -------------------------------------------
+# ---------------------
 enable_join: true
-join_message: "<blockquote>ㅤㅤㅤㅤㅤ\n ➕ <b><u>%player%</u></b> joined the game! (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+join_message: "<blockquote>➕ <b>%player%</b> joined the game! (%online%/%max%)</blockquote>"
 # Available placeholders: %player%, %displayname%, %online%, %max%
 
+# ---------------------
+# First Join (new players)
+# ---------------------
+enable_first_join: true
+first_join_message: "<blockquote>🌟 <b>%player%</b> joined for the first time! Welcome! (%online%/%max%)</blockquote>"
+# Available placeholders: %player%, %displayname%, %online%, %max%
 
-
+# ---------------------
 # Leave Messages
-# -------------------------------------------
+# ---------------------
 enable_leave: true
-leave_message: "<blockquote>ㅤㅤㅤㅤㅤ\n ➖ <b><u>%player%</u></b> left the game! (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+leave_message: "<blockquote>➖ <b>%player%</b> left the game! (%online%/%max%)</blockquote>"
 # Available placeholders: %player%, %displayname%, %online%, %max%
 
-
-
+# ---------------------
 # Chat Messages
-# -------------------------------------------
+# ---------------------
 enable_chat: true
-chat_message: "<b><u>%player%</u></b> <b>➥</b> %message%"
+chat_message: "💬 <b>%player%</b> ➥ %message%"
 # Available placeholders: %player%, %displayname%, %message%, %online%, %max%
 
-
-
+# ---------------------
 # Advancement Messages
-# -------------------------------------------
+# ---------------------
 enable_advancement: true
-advancement_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 🏆 <b><u>%player%</u></b> made the advancement <u>[%advancement%]</u> (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+advancement_message: "<blockquote>🏆 <b>%player%</b> earned <b>[%advancement%]</b> (%online%/%max%)</blockquote>"
 # Available placeholders: %player%, %displayname%, %advancement%, %online%, %max%
 
-
-
+# ---------------------
 # Death Messages
-# -------------------------------------------
+# ---------------------
 enable_death: true
-death_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 💀 <b><u>%player%</u></b> death: %death_message% (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+death_message: "<blockquote>💀 %death_message% (%online%/%max%)</blockquote>"
 # Available placeholders: %player%, %displayname%, %death_message%, %online%, %max%
 
-
-
+# ---------------------
 # World Switch Messages
-# -------------------------------------------
+# ---------------------
 enable_world_switch: true
-world_switch_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 🌍 <b><u>%player%</u></b> moved from <u>%from_world%</u> to <u>%to_world%</u> (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+world_switch_message: "<blockquote>🌍 <b>%player%</b> moved: %from_world% → %to_world% (%online%/%max%)</blockquote>"
 # Available placeholders: %player%, %displayname%, %from_world%, %to_world%, %online%, %max%
 
-
-
+# ---------------------
 # Chat Filter
-# -------------------------------------------
+# ---------------------
 enable_chat_filter: true
 filtered_words:
   - "badword1"
   - "badword2"
-filtered_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 🚫 <b><u>%player%</u></b> used a filtered word. (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
+filtered_message: "<blockquote>🚫 <b>%player%</b> used a filtered word. (%online%/%max%)</blockquote>"
 # Available placeholders: %player%, %displayname%, %online%, %max%
 
-
-
-# Command Executes
+# ---------------------
+# Command Execution Logging
+# ---------------------
 enable_send_command_executes: false
-command_execute_message: "<blockquote>ㅤㅤㅤㅤㅤ\n 💠 <b><u>%player%</u></b> <b>➥</b> %command% . (Online: %online%/%max%)\nㅤㅤㅤㅤ</blockquote>"
-command_executes_chat_id: "CHAT_ID"
+command_execute_message: "<blockquote>💠 <b>%player%</b> ➥ <code>%command%</code> (%online%/%max%)</blockquote>"
+command_executes_chat_id: "CHAT_ID"             # Separate chat ID for command logs (can be same as main)
 send_command_executes_to_thread: false
 command_executes_group_thread_id: "THREAD_ID"
-ignored_commands: 
+ignored_commands:
   - "/login"
   - "/register"
+  - "/l"
+  - "/reg"
 # Available placeholders: %player%, %displayname%, %command%, %online%, %max%
 
+# ---------------------
+# Telegram Sudo Command
+# ---------------------
+enable_sudo_command: false                      # Allow admins to execute server commands via /sudo
+sudo_show_output: true                          # Show command output in Telegram response
+sudo_blacklist:                                 # Commands that cannot be executed via /sudo
+  - "stop"
+  - "restart"
+  - "op"
+  - "deop"
+  - "ban-ip"
 
+# ---------------------
+# Anti-Flood Protection
+# ---------------------
+anti_flood_enabled: true                        # Rate-limit messages to prevent flooding
+anti_flood_max_messages: 20                     # Max messages per window
+anti_flood_window_seconds: 10                   # Window duration in seconds
 
-#Telegram Sudo Command
-enable_sudo_command: false
+# ---------------------
+# Error Messages
+# ---------------------
+error_not_admin: "<blockquote>❌ You are not registered as an admin!</blockquote>"
 
-# Debug Mode (Advanced users only)
-# -------------------------------------------
-debug_mode: false
+# ---------------------
+# Debug Mode
+# ---------------------
+debug_mode: false                               # Enable detailed debug logging
 
+# ---------------------
 # Plugin Version (DO NOT EDIT)
-# -------------------------------------------
-version: "4.0.0"
+# ---------------------
+version: "5.0.0"
