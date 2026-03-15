@@ -262,9 +262,12 @@ The `telegram_game_message` template controls how Telegram messages appear in Mi
 prefix_replacements:
   "VIP": "[VIP]"
   "ADMIN": "[ADMIN]"
+  "Member": "<tg-emoji emoji-id='5368324170671202286'>👤</tg-emoji>"
 ```
 
-Replace ugly in-game rank prefixes with clean text for Telegram messages. The key is the text to find in the player's display name, and the value is what to replace it with. Use the `%prefix%` placeholder in message templates to show the replaced prefix.
+Replace ugly in-game rank prefixes with clean text for Telegram messages. The key is the text to find in the player's display name, and the value is what to replace it with. Prefix is fetched from Vault API (works with LuckPerms, PEX, etc.) and falls back to display name extraction if Vault is not installed.
+
+**HTML support:** Replacement values support full Telegram HTML including custom emoji (`<tg-emoji>`), bold, italic and other tags. Values are sent as raw HTML without escaping. If no replacement matches, the prefix is auto-escaped for safety.
 
 ### Server Start/Stop Notifications
 

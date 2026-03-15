@@ -262,9 +262,12 @@ telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"   # TG→MC xabar 
 prefix_replacements:
   "VIP": "[VIP]"
   "ADMIN": "[ADMIN]"
+  "Member": "<tg-emoji emoji-id='5368324170671202286'>👤</tg-emoji>"
 ```
 
-O'yin ichidagi xunuk unvon prefikslarini Telegram xabarlari uchun toza matnga almashtiring. Kalit — o'yinchining ko'rsatish nomida topiladigan matn, qiymat — uni nima bilan almashtirish kerak. Almashtirilgan prefiksni ko'rsatish uchun xabar shablonlarida `%prefix%` placeholderini ishlating.
+O'yin ichidagi xunuk unvon prefikslarini Telegram xabarlari uchun toza matnga almashtiring. Kalit — o'yinchining ko'rsatish nomida topiladigan matn, qiymat — uni nima bilan almashtirish kerak. Prefiks Vault API orqali olinadi (LuckPerms, PEX va h.k. bilan ishlaydi), Vault o'rnatilmagan bo'lsa display name dan ajratib olishga fallback qiladi.
+
+**HTML qo'llab-quvvatlash:** Almashtirish qiymatlari to'liq Telegram HTML ni qo'llab-quvvatlaydi, jumladan maxsus emoji (`<tg-emoji>`), qalin, kursiv va boshqa teglar. Qiymatlar xom HTML sifatida escape qilinmasdan yuboriladi. Agar hech qanday almashtirish mos kelmasa, prefiks xavfsizlik uchun avtomatik escape qilinadi.
 
 ### Server ishga tushishi/to'xtashi
 
