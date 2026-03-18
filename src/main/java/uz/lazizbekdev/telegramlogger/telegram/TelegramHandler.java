@@ -402,13 +402,14 @@ public class TelegramHandler {
 
     private void handleChatMessage(long userId, String userIdStr, String messageText) {
         AdminManager admins = plugin.getAdminManager();
+        ConfigManager cfg = plugin.getConfigManager();
 
         String status = plugin.getTelegramAPI().getChatMemberStatus(userId);
         boolean isGroupAdmin = status.equals("creator") || status.equals("administrator");
         boolean isRegistered = admins.isRegistered(userIdStr);
 
-        if (!isGroupAdmin || !isRegistered) {
-            plugin.getTelegramAPI().sendMessage(plugin.getConfigManager().getErrorNotAdmin());
+        if (!isGroupAdmin && !isRegistered) {
+            plugin.getTelegramAPI().sendMessage(cfg.getErrorNotAdmin());
             return;
         }
 
@@ -416,17 +417,24 @@ public class TelegramHandler {
         if (adminName == null) adminName = "Admin";
 
         if (messageText.length() > 512) {
-            plugin.getTelegramAPI().sendMessage("\u274C Message too long (max 512 chars).");
+            plugin.getTelegramAPI().sendMessage("❌ Message too long (max 512 chars).");
             return;
         }
 
         if (containsFilteredWord(messageText)) {
-            plugin.getTelegramAPI().sendMessage("\u274C Message contains filtered words.");
+            plugin.getTelegramAPI().sendMessage("❌ Message contains filtered words.");
             return;
         }
 
         broadcastToMinecraft(adminName, messageText);
         plugin.getDataManager().incrementStat("chat_messages");
+
+        if (cfg.isEnableTelegramToTelegramRelay()) {
+            String relayMessage = cfg.getTelegramToTelegramRelayFormat()
+                    .replace("%name%", adminName)
+                    .replace("%message%", messageText);
+            plugin.getTelegramAPI().sendMessage(MessageUtils.stripColors(relayMessage));
+        }
     }
 
     private boolean containsFilteredWord(String message) {
@@ -440,13 +448,67 @@ public class TelegramHandler {
             public void run() {
                 ConfigManager cfg = plugin.getConfigManager();
                 String template = cfg.getTelegramGameMessage();
-                String formatted = MessageUtils.colorize(
-                        template.replace("%name%", senderName)
-                                .replace("%message%", message));
+                String formattedMessage = template.replace("%name%", senderName);
+
+                List<Player> mentionedPlayers = new ArrayList<>();
+                String finalMessage = message;
+
+                if (cfg.isEnableMentionNotifications()) {
+                    // Regex to find @player mentions
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("@(\\w+)");
+                    java.util.regex.Matcher matcher = pattern.matcher(finalMessage);
+                    StringBuffer sb = new StringBuffer();
+
+                    while (matcher.find()) {
+                        String playerName = matcher.group(1);
+                        Player mentionedPlayer = Bukkit.getPlayerExact(playerName);
+                        if (mentionedPlayer != null && mentionedPlayer.isOnline()) {
+                            mentionedPlayers.add(mentionedPlayer);
+                            String highlightColor = cfg.getMentionHighlightColor();
+                            matcher.appendReplacement(sb, highlightColor + "@" + playerName + "§r");
+                        }
+                    }
+                    matcher.appendTail(sb);
+                    finalMessage = sb.toString();
+                }
+
+                formattedMessage = formattedMessage.replace("%message%", finalMessage);
+                formattedMessage = MessageUtils.colorize(formattedMessage);
+
 
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    player.sendMessage(formatted);
+                    player.sendMessage(formattedMessage);
                 }
+
+                if (cfg.isEnableMentionNotifications()) {
+                    for (Player mentionedPlayer : mentionedPlayers) {
+                        try {
+                            // Sound
+                            mentionedPlayer.playSound(mentionedPlayer.getLocation(), org.bukkit.Sound.valueOf(cfg.getMentionSound()), 1.0f, 1.0f);
+
+                            // Title
+                            mentionedPlayer.sendTitle(MessageUtils.colorize(cfg.getMentionTitle()), "", 10, 20, 10);
+
+                            // BossBar
+                            org.bukkit.boss.BossBar bossBar = Bukkit.createBossBar(
+                                    MessageUtils.colorize(cfg.getMentionBossBar().replace("%name%", senderName)),
+                                    org.bukkit.boss.BarColor.YELLOW,
+                                    org.bukkit.boss.BarStyle.SOLID
+                            );
+                            bossBar.addPlayer(mentionedPlayer);
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    bossBar.removePlayer(mentionedPlayer);
+                                }
+                            }.runTaskLater(plugin, 40L); // 2 seconds
+
+                        } catch (Exception e) {
+                            plugin.getLogger().warning("Failed to send mention notification to " + mentionedPlayer.getName() + ": " + e.getMessage());
+                        }
+                    }
+                }
+
                 plugin.getLogger().info("[TG] " + senderName + ": " + message);
             }
         }.runTask(plugin);

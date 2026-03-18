@@ -94,6 +94,16 @@ public class ConfigManager {
     // Error messages
     private String errorNotAdmin = "<blockquote>\u274C You are not registered as an admin!</blockquote>";
 
+    // Telegram to Game enhancements
+    private boolean enableTelegramToTelegramRelay = true;
+    private String telegramToTelegramRelayFormat = "[TG] %name%: %message%";
+    private boolean enableMentionNotifications = true;
+    private String mentionSound = "BLOCK_NOTE_BLOCK_BELL";
+    private String mentionTitle = "&eYou were mentioned in chat!";
+    private String mentionBossBar = "&eYou were mentioned by &f%name%";
+    private String mentionHighlightColor = "&e";
+
+
     // Version
     private String configVersion = TelegramLogger.PLUGIN_VERSION;
 
@@ -208,6 +218,15 @@ public class ConfigManager {
         antiFloodWindowSeconds = cfg.getLong("anti_flood_window_seconds", 10);
 
         errorNotAdmin = cfg.getString("error_not_admin", errorNotAdmin);
+
+        enableTelegramToTelegramRelay = cfg.getBoolean("telegram_to_game_enhancements.enable_telegram_to_telegram_relay", true);
+        telegramToTelegramRelayFormat = cfg.getString("telegram_to_game_enhancements.telegram_to_telegram_relay_format", "[TG] %name%: %message%");
+        enableMentionNotifications = cfg.getBoolean("telegram_to_game_enhancements.enable_mention_notifications", true);
+        mentionSound = cfg.getString("telegram_to_game_enhancements.mention_sound", "BLOCK_NOTE_BLOCK_BELL");
+        mentionTitle = cfg.getString("telegram_to_game_enhancements.mention_title", "&eYou were mentioned in chat!");
+        mentionBossBar = cfg.getString("telegram_to_game_enhancements.mention_boss_bar", "&eYou were mentioned by &f%name%");
+        mentionHighlightColor = cfg.getString("telegram_to_game_enhancements.mention_highlight_color", "&e");
+
         configVersion = cfg.getString("version", TelegramLogger.PLUGIN_VERSION);
     }
 
@@ -393,4 +412,13 @@ public class ConfigManager {
 
     public String getErrorNotAdmin() { return errorNotAdmin; }
     public Map<String, String> getPrefixReplacements() { return prefixReplacements; }
+
+    // Telegram to Game enhancements
+    public boolean isEnableTelegramToTelegramRelay() { return enableTelegramToTelegramRelay; }
+    public String getTelegramToTelegramRelayFormat() { return telegramToTelegramRelayFormat; }
+    public boolean isEnableMentionNotifications() { return enableMentionNotifications; }
+    public String getMentionSound() { return mentionSound; }
+    public String getMentionTitle() { return mentionTitle; }
+    public String getMentionBossBar() { return mentionBossBar; }
+    public String getMentionHighlightColor() { return mentionHighlightColor; }
 }

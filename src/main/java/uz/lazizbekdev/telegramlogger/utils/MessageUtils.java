@@ -161,6 +161,9 @@ public final class MessageUtils {
      */
     public static String cleanChatComponents(String message) {
         if (message == null) return "";
+        // Handle the specific mention format, which is a tag containing @ and followed by :>
+        message = message.replaceAll("(<[^>]*@([^>]*)>):>", "$2");
+        // Generic cleaning for other chat components
         return message.replaceAll("<[^>]*=[^>]*>", "").trim();
     }
 

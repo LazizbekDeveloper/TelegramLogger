@@ -2,6 +2,7 @@ uz/lazizbekdev/telegramlogger/telegram/TelegramHandler$2.class
 uz/lazizbekdev/telegramlogger/utils/MessageUtils.class
 uz/lazizbekdev/telegramlogger/telegram/TelegramHandler.class
 uz/lazizbekdev/telegramlogger/config/ConfigManager.class
+uz/lazizbekdev/telegramlogger/telegram/TelegramHandler$3$1.class
 uz/lazizbekdev/telegramlogger/listeners/EventListener.class
 uz/lazizbekdev/telegramlogger/utils/AntiFloodManager$SlidingWindow.class
 uz/lazizbekdev/telegramlogger/telegram/TelegramHandler$1.class

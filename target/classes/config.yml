@@ -145,3 +145,19 @@ debug_mode: false                               # Enable detailed debug logging
 # Plugin Version (DO NOT EDIT)
 # ---------------------
 version: "5.0.1"
+
+# ---------------------
+# Telegram to Game enhancements
+# ---------------------
+telegram_to_game_enhancements:
+  # Relay messages sent from Telegram back to the same Telegram chat.
+  # This is useful for seeing a clean, formatted version of the message.
+  enable_telegram_to_telegram_relay: true
+  telegram_to_telegram_relay_format: "[TG] %name%: %message%"
+
+  # In-game notifications for @mentions
+  enable_mention_notifications: true
+  mention_sound: "BLOCK_NOTE_BLOCK_BELL"
+  mention_title: "&eYou were mentioned in chat!"
+  mention_boss_bar: "&eYou were mentioned by &f%name%"
+  mention_highlight_color: "&e" # Yellow
