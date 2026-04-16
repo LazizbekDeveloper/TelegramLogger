@@ -42,10 +42,12 @@ Serveringizdagi barcha harakatlarni Telegram guruh yoki kanalingiz orqali real v
   - [Yutuq xabarlari](#yutuq-xabarlari)
   - [O'lim xabarlari](#olim-xabarlari)
   - [Dunyo almashtirish xabarlari](#dunyo-almashtirish-xabarlari)
+  - [Pet o'limi xabarlari](#pet-olimi-xabarlari)
   - [Chat filtri](#chat-filtri)
   - [Buyruq bajarilishi logi](#buyruq-bajarilishi-logi)
   - [Telegram Sudo buyrug'i](#telegram-sudo-buyrugi)
   - [Flood himoyasi](#flood-himoyasi)
+  - [Telegram -> O'yin yaxshilanishlari](#telegram---oyin-yaxshilanishlari)
   - [Debug rejimi](#debug-rejimi)
 - [Buyruqlar ma'lumotnomasi](#buyruqlar-malumotnomasi)
   - [O'yin ichidagi buyruqlar](#oyin-ichidagi-buyruqlar)
@@ -101,7 +103,7 @@ Serveringizdagi barcha harakatlarni Telegram guruh yoki kanalingiz orqali real v
 
 ---
 
-## v5.0.0 dagi yangiliklar
+## v5.0.1 dagi yangiliklar
 
 ### Xato tuzatishlar
 - **Takroriy Telegram xabarlari tuzatildi** — Telegramdan xabarlar ba'zan Minecraft ga 2-3 marta yetkazilardi. Sababi bir-biriga o'xshagan uzoq so'rov (long-poll) so'rovlari edi. Atomik so'rov himoyasi bilan tuzatildi.
@@ -342,6 +344,15 @@ Dunyo nomlari avtomatik ravishda emojilar bilan formatlanadi:
 | `lobby` | 🏔️ Lobby |
 | `maxsus_dunyo` | 🌎 Maxsus Dunyo |
 
+### Pet o'limi xabarlari
+
+```yaml
+enable_pet_death: true
+pet_death_message: "<blockquote>🐾 <b>%player%</b> o'yinchi <b>%owner%</b> ning %pet% hayvonini o'ldirdi! (%online%/%max%)</blockquote>"
+```
+
+Mavjud placeholderlar: `%player%`, `%displayname%`, `%owner%`, `%pet%`, `%online%`, `%max%`
+
 ### Chat filtri
 
 ```yaml
@@ -421,6 +432,28 @@ Quyidagi holatlarda to'lib ketishning oldini oladi:
 - Hodisa bo'ronlari
 
 Tezlik chegarasidan oshgan xabarlar jimgina tashlab yuboriladi.
+
+### Telegram -> O'yin yaxshilanishlari
+
+```yaml
+telegram_to_game_enhancements:
+  enable_telegram_to_telegram_relay: true
+  telegram_to_telegram_relay_format: "[TG] %name%: %message%"
+  enable_mention_notifications: true
+  mention_sound: "BLOCK_NOTE_BLOCK_BELL"
+  mention_volume: 1.0
+  mention_pitch: 1.0
+  mention_title: "&eSizni chatda eslatishdi!"
+  mention_subtitle: "&fKim tomonidan: &6%name%"
+  mention_title_fade_in: 10
+  mention_title_stay: 40
+  mention_title_fade_out: 10
+  mention_actionbar: "&e&l⭐ SIZNI %name% ESLATDI ⭐"
+  mention_actionbar_duration: 60
+  mention_boss_bar: "&eSizni %name% eslatdi"
+  mention_boss_bar_duration: 80
+  mention_highlight_color: "&e"
+```
 
 ### Debug rejimi
 

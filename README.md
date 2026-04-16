@@ -42,10 +42,12 @@ Monitor all server activities in real-time through your Telegram group or channe
   - [Advancement Messages](#advancement-messages)
   - [Death Messages](#death-messages)
   - [World Switch Messages](#world-switch-messages)
+  - [Pet Death Messages](#pet-death-messages)
   - [Chat Filter](#chat-filter)
   - [Command Execution Logging](#command-execution-logging)
   - [Telegram Sudo Command](#telegram-sudo-command)
   - [Anti-Flood Protection](#anti-flood-protection)
+  - [Telegram to Game enhancements](#telegram-to-game-enhancements)
   - [Debug Mode](#debug-mode)
 - [Commands Reference](#-commands-reference)
   - [In-Game Commands](#in-game-commands)
@@ -101,7 +103,7 @@ Monitor all server activities in real-time through your Telegram group or channe
 
 ---
 
-## What's New in v5.0.0
+## What's New in v5.0.1
 
 ### Bug Fixes
 - **Fixed duplicate Telegram messages** — Messages from Telegram were sometimes delivered 2-3 times to Minecraft. Root cause was overlapping long-poll requests. Fixed with an atomic polling guard.
@@ -342,6 +344,15 @@ World names are automatically formatted with emojis:
 | `lobby` | 🏔️ Lobby |
 | `custom_world` | 🌎 Custom World |
 
+### Pet Death Messages
+
+```yaml
+enable_pet_death: true
+pet_death_message: "<blockquote>🐾 <b>%player%</b> killed <b>%owner%</b>'s %pet%! (%online%/%max%)</blockquote>"
+```
+
+Available placeholders: `%player%`, `%displayname%`, `%prefix%`, `%suffix%`, `%owner%`, `%pet%`, `%online%`, `%max%`
+
 ### Chat Filter
 
 ```yaml
@@ -421,6 +432,28 @@ Prevents flooding in situations like:
 - Event storms
 
 Messages that exceed the rate limit are silently dropped.
+
+### Telegram to Game enhancements
+
+```yaml
+telegram_to_game_enhancements:
+  enable_telegram_to_telegram_relay: true
+  telegram_to_telegram_relay_format: "[TG] %name%: %message%"
+  enable_mention_notifications: true
+  mention_sound: "BLOCK_NOTE_BLOCK_BELL"
+  mention_volume: 1.0
+  mention_pitch: 1.0
+  mention_title: "&eYou were mentioned in chat!"
+  mention_subtitle: "&fBy &6%name%"
+  mention_title_fade_in: 10
+  mention_title_stay: 40
+  mention_title_fade_out: 10
+  mention_actionbar: "&e&l⭐ MENTIONED BY %name% ⭐"
+  mention_actionbar_duration: 60
+  mention_boss_bar: "&eYou were mentioned by &f%name%"
+  mention_boss_bar_duration: 80
+  mention_highlight_color: "&e"
+```
 
 ### Debug Mode
 
@@ -819,6 +852,9 @@ death_message: "<blockquote>💀 %death_message% (%online%/%max%)</blockquote>"
 enable_world_switch: true
 world_switch_message: "<blockquote>🌍 <b>%player%</b> moved: %from_world% → %to_world% (%online%/%max%)</blockquote>"
 
+enable_pet_death: true
+pet_death_message: "<blockquote>🐾 <b>%player%</b> killed <b>%owner%</b>'s %pet%! (%online%/%max%)</blockquote>"
+
 enable_chat_filter: true
 filtered_words:
   - "badword1"
@@ -850,6 +886,24 @@ anti_flood_max_messages: 20
 anti_flood_window_seconds: 10
 
 error_not_admin: "<blockquote>❌ You are not registered as an admin!</blockquote>"
+
+telegram_to_game_enhancements:
+  enable_telegram_to_telegram_relay: true
+  telegram_to_telegram_relay_format: "[TG] %name%: %message%"
+  enable_mention_notifications: true
+  mention_sound: "BLOCK_NOTE_BLOCK_BELL"
+  mention_volume: 1.0
+  mention_pitch: 1.0
+  mention_title: "&eYou were mentioned in chat!"
+  mention_subtitle: "&fBy &6%name%"
+  mention_title_fade_in: 10
+  mention_title_stay: 40
+  mention_title_fade_out: 10
+  mention_actionbar: "&e&l⭐ MENTIONED BY %name% ⭐"
+  mention_actionbar_duration: 60
+  mention_boss_bar: "&eYou were mentioned by &f%name%"
+  mention_boss_bar_duration: 80
+  mention_highlight_color: "&e"
 
 debug_mode: false
 

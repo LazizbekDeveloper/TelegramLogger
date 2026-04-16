@@ -127,7 +127,7 @@ public class ConfigManager {
     }
 
     /**
-     * Load configuration. If the file is corrupt, triggers restore.
+     * Load configuration. If the file is corrupt or outdated, triggers restore/migration.
      */
     public void load() {
         if (!plugin.getDataFolder().exists()) {
@@ -144,7 +144,14 @@ public class ConfigManager {
             config = YamlConfiguration.loadConfiguration(reader);
         } catch (Exception e) {
             logger.severe("Config file is corrupt! Starting restore process...");
-            restoreConfig();
+            restoreConfig(true);
+            return;
+        }
+
+        // Check if config is outdated (missing new keys)
+        if (isOutdated(config)) {
+            logger.info("Config is outdated. Migrating to new version...");
+            restoreConfig(false);
             return;
         }
 
@@ -153,6 +160,16 @@ public class ConfigManager {
         if (!isValid()) {
             logger.warning("Config has invalid values. Check your config.yml");
         }
+    }
+
+    /**
+     * Check if the configuration is missing any required keys from the current version.
+     */
+    private boolean isOutdated(FileConfiguration cfg) {
+        // Essential new keys added in v5.0.1
+        return !cfg.contains("telegram_to_game_enhancements") || 
+               !cfg.contains("enable_pet_death") ||
+               !cfg.contains("telegram_to_game_enhancements.mention_actionbar");
     }
 
     /**
@@ -256,25 +273,27 @@ public class ConfigManager {
     }
 
     /**
-     * Backup a corrupt config, create a fresh one, and migrate recoverable values.
+     * Backup a config, create a fresh one, and migrate recoverable values.
+     * @param corrupt Whether the file was unreadable (corrupt) or just outdated.
      */
-    private void restoreConfig() {
+    private void restoreConfig(boolean corrupt) {
         String timestamp = MessageUtils.getDateTimestamp();
-        File backup = new File(plugin.getDataFolder(), "config.yml.broken." + timestamp);
+        String suffix = corrupt ? ".broken." : ".old.";
+        File backup = new File(plugin.getDataFolder(), "config.yml" + suffix + timestamp);
 
         if (configFile.renameTo(backup)) {
-            logger.info("Backed up broken config to: " + backup.getName());
+            logger.info("Backed up " + (corrupt ? "broken" : "old") + " config to: " + backup.getName());
         } else {
-            logger.severe("Could not backup broken config file!");
+            logger.severe("Could not backup config file!");
         }
 
         // Extract the default config from the jar
         plugin.saveResource("config.yml", false);
 
-        // Attempt to recover values from the broken file line by line
-        Map<String, String> recovered = recoverValues(backup);
+        // Attempt to recover values from the backup file
+        Map<String, Object> recovered = corrupt ? recoverValuesSimple(backup) : recoverValuesFull(backup);
         if (!recovered.isEmpty()) {
-            logger.info("Recovered " + recovered.size() + " values from broken config.");
+            logger.info("Recovered " + recovered.size() + " values from " + (corrupt ? "broken" : "old") + " config.");
             mergeRecoveredValues(recovered);
         }
 
@@ -286,8 +305,8 @@ public class ConfigManager {
      * Line-by-line recovery from a potentially corrupt YAML file.
      * Extracts simple key: value pairs.
      */
-    private Map<String, String> recoverValues(File brokenFile) {
-        Map<String, String> values = new LinkedHashMap<>();
+    private Map<String, Object> recoverValuesSimple(File brokenFile) {
+        Map<String, Object> values = new LinkedHashMap<>();
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(brokenFile), StandardCharsets.UTF_8))) {
             String line;
@@ -326,9 +345,36 @@ public class ConfigManager {
     }
 
     /**
-     * Merge recovered key-value pairs into the freshly created config file.
+     * Full recovery using YamlConfiguration for a valid but outdated file.
      */
-    private void mergeRecoveredValues(Map<String, String> recovered) {
+    private Map<String, Object> recoverValuesFull(File oldFile) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        try (InputStreamReader reader = new InputStreamReader(
+                new FileInputStream(oldFile), StandardCharsets.UTF_8)) {
+            FileConfiguration oldCfg = YamlConfiguration.loadConfiguration(reader);
+            for (String key : oldCfg.getKeys(true)) {
+                if (oldCfg.isConfigurationSection(key)) continue;
+                
+                Object val = oldCfg.get(key);
+                if (val != null) {
+                    // Skip default placeholders
+                    if (val instanceof String) {
+                        String s = (String) val;
+                        if (s.equals("BOT_TOKEN") || s.equals("CHAT_ID") || s.equals("THREAD_ID")) continue;
+                    }
+                    values.put(key, val);
+                }
+            }
+        } catch (Exception e) {
+            logger.warning("Could not recover values from old config: " + e.getMessage());
+        }
+        return values;
+    }
+
+    /**
+     * Merge recovered values into the freshly created config file.
+     */
+    private void mergeRecoveredValues(Map<String, Object> recovered) {
         try {
             FileConfiguration freshConfig;
             try (InputStreamReader reader = new InputStreamReader(
@@ -336,23 +382,14 @@ public class ConfigManager {
                 freshConfig = YamlConfiguration.loadConfiguration(reader);
             }
 
-            for (Map.Entry<String, String> entry : recovered.entrySet()) {
+            for (Map.Entry<String, Object> entry : recovered.entrySet()) {
                 String key = entry.getKey();
-                String value = entry.getValue();
+                Object value = entry.getValue();
 
                 if (!freshConfig.contains(key)) continue;
 
-                // Preserve type of the existing default value
-                Object existing = freshConfig.get(key);
-                if (existing instanceof Boolean) {
-                    freshConfig.set(key, Boolean.parseBoolean(value));
-                } else if (existing instanceof Integer) {
-                    try { freshConfig.set(key, Integer.parseInt(value)); } catch (NumberFormatException ignored) {}
-                } else if (existing instanceof Long) {
-                    try { freshConfig.set(key, Long.parseLong(value)); } catch (NumberFormatException ignored) {}
-                } else {
-                    freshConfig.set(key, value);
-                }
+                // Set value directly
+                freshConfig.set(key, value);
             }
 
             freshConfig.save(configFile);
