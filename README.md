@@ -6,7 +6,7 @@
 
 [![Java](https://img.shields.io/badge/Java-8%2B-orange)](https://www.java.com)
 [![Spigot](https://img.shields.io/badge/Spigot-1.16--1.21-yellow)](https://www.spigotmc.org)
-[![Version](https://img.shields.io/badge/version-5.0.1-brightgreen)](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
+[![Version](https://img.shields.io/badge/version-5.0.2-brightgreen)](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Downloads](https://img.shields.io/badge/downloads-1K%2B-blue)](https://www.spigotmc.org/resources/120590)
 
@@ -24,7 +24,7 @@ Monitor all server activities in real-time through your Telegram group or channe
 ## Table of Contents
 
 - [Features Overview](#-features-overview)
-- [What's New in v5.0.0](#-whats-new-in-v500)
+- [What's New in v5.0.2](#-whats-new-in-v502)
 - [Requirements](#-requirements)
 - [Installation Guide](#-installation-guide)
   - [Step 1: Download and Install](#step-1-download-and-install)
@@ -103,7 +103,7 @@ Monitor all server activities in real-time through your Telegram group or channe
 
 ---
 
-## What's New in v5.0.1
+## What's New in v5.0.2
 
 ### Bug Fixes
 - **Fixed duplicate Telegram messages** — Messages from Telegram were sometimes delivered 2-3 times to Minecraft. Root cause was overlapping long-poll requests. Fixed with an atomic polling guard.
@@ -151,14 +151,14 @@ Monitor all server activities in real-time through your Telegram group or channe
 
 ### Step 1: Download and Install
 
-1. Download the latest `TelegramLogger-5.0.1.jar` from [Releases](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
+1. Download the latest `TelegramLogger-5.0.2.jar` from [Releases](https://github.com/LazizbekDeveloper/TelegramLogger/releases)
 2. Place the `.jar` file in your server's `plugins/` folder
 3. Start the server once to generate the default configuration
 4. Stop the server to edit the configuration
 
 ```
 plugins/
-  TelegramLogger-5.0.1.jar
+  TelegramLogger-5.0.2.jar
   TelegramLogger/
     config.yml          <-- Edit this file
     data.json           <-- Auto-generated statistics
@@ -703,7 +703,7 @@ cd TelegramLogger
 mvn clean package
 
 # The output JAR will be at:
-# target/TelegramLogger-5.0.1.jar
+# target/TelegramLogger-5.0.2.jar
 ```
 
 ### Build Output
@@ -811,7 +811,7 @@ A: Currently, world name formatting is built-in. Custom world names are auto-for
 
 ```yaml
 # ===========================================
-#        TelegramLogger v5.0.1
+#        TelegramLogger v5.0.2
 #        Developed by LazizbekDev
 #        Telegram: https://t.me/LazizbekDev
 # ===========================================
@@ -907,7 +907,7 @@ telegram_to_game_enhancements:
 
 debug_mode: false
 
-version: "5.0.1"
+version: "5.0.2"
 ```
 
 </details>

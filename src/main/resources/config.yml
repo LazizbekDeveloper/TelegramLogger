@@ -151,7 +151,7 @@ debug_mode: false                               # Enable detailed debug logging
 # ---------------------
 # Plugin Version (DO NOT EDIT)
 # ---------------------
-version: "5.0.1"
+version: "5.0.2"
 
 # ---------------------
 # Telegram to Game enhancements

@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class TelegramLogger extends JavaPlugin {
 
-    public static final String PLUGIN_VERSION = "5.0.1";
+    public static final String PLUGIN_VERSION = "5.0.2";
 
     private ConfigManager configManager;
     private DataManager dataManager;

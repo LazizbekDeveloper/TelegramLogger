@@ -6,7 +6,7 @@
 
     <groupId>uz.lazizbekdev</groupId>
     <artifactId>TelegramLogger</artifactId>
-    <version>5.0.1</version>
+    <version>5.0.2</version>
     <packaging>jar</packaging>
 
     <name>TelegramLogger</name>

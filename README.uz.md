@@ -949,7 +949,7 @@ debug_mode: false                               # Batafsil debug loglashni yoqis
 # ---------------------
 # Plugin versiyasi (TAHRIRLAMANG)
 # ---------------------
-version: "5.0.1"
+version: "5.0.2"
 ```
 
 </details>
