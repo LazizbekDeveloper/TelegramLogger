@@ -95,6 +95,11 @@ public class TelegramLogger extends JavaPlugin {
     @Override
     public void onDisable() {
         try {
+            // Stop polling immediately
+            if (telegramHandler != null) {
+                telegramHandler.stopPolling();
+            }
+
             // Send server stop notification
             if (botActive && configManager != null && configManager.isEnableServerStartStop()) {
                 // Sync send since plugin is shutting down

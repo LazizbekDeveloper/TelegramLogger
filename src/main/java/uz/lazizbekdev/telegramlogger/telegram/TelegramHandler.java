@@ -24,11 +24,14 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 
+import org.bukkit.scheduler.BukkitTask;
+
 public class TelegramHandler {
 
     private final TelegramLogger plugin;
     private volatile long lastUpdateId = 0;
     private final AtomicBoolean polling = new AtomicBoolean(false);
+    private BukkitTask pollTask;
 
     public TelegramHandler(TelegramLogger plugin) {
         this.plugin = plugin;
@@ -38,21 +41,23 @@ public class TelegramHandler {
     public void setLastUpdateId(long id) { this.lastUpdateId = id; }
 
     public void startPolling() {
-        // Clear any existing webhook before starting polling to avoid 409 Conflict error
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        stopPolling(); // Ensure no double polling
+
+        // Clear any existing webhook before starting polling
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 plugin.getTelegramAPI().deleteWebhook();
             } catch (Exception ignored) {}
         });
 
-        new BukkitRunnable() {
+        pollTask = new BukkitRunnable() {
             @Override
             public void run() {
+                if (!plugin.isPluginActive() || !plugin.isBotActive()) return;
                 if (!plugin.getConfigManager().isSendTelegramMessagesToGame()
                         && !plugin.getConfigManager().isEnableSudoCommand()) {
                     return;
                 }
-                if (!plugin.isPluginActive() || !plugin.isBotActive()) return;
                 if (!polling.compareAndSet(false, true)) return;
 
                 try {
@@ -69,7 +74,14 @@ public class TelegramHandler {
                     polling.set(false);
                 }
             }
-        }.runTaskTimerAsynchronously(plugin, 20L, 20L);
+        }.runTaskTimerAsynchronously(plugin, 40L, 20L);
+    }
+
+    public void stopPolling() {
+        if (pollTask != null) {
+            pollTask.cancel();
+            pollTask = null;
+        }
     }
 
     private void processUpdates(JsonArray updates) {
