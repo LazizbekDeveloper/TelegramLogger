@@ -36,6 +36,13 @@ public class TelegramHandler {
     public void setLastUpdateId(long id) { this.lastUpdateId = id; }
 
     public void startPolling() {
+        // Clear any existing webhook before starting polling to avoid 409 Conflict error
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                plugin.getTelegramAPI().deleteWebhook();
+            } catch (Exception ignored) {}
+        });
+
         new BukkitRunnable() {
             @Override
             public void run() {

@@ -76,6 +76,13 @@ world_switch_message: "<blockquote>🌍 <b>%player%</b> moved: %from_world% → 
 # Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %from_world%, %to_world%, %online%, %max%
 
 # ---------------------
+# Pet Death Messages
+# ---------------------
+enable_pet_death: true
+pet_death_message: "<blockquote>🐾 <b>%player%</b> killed <b>%owner%</b>'s %pet%! (%online%/%max%)</blockquote>"
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %owner%, %pet%, %online%, %max%
+
+# ---------------------
 # Chat Filter
 # ---------------------
 enable_chat_filter: true

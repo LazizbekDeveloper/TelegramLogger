@@ -6,8 +6,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.entity.Tameable;
+import org.bukkit.entity.AnimalTamer;
 import uz.lazizbekdev.telegramlogger.TelegramLogger;
 import uz.lazizbekdev.telegramlogger.config.ConfigManager;
 import uz.lazizbekdev.telegramlogger.managers.DataManager;
@@ -91,9 +94,13 @@ public class EventListener implements Listener {
 
     // ─── Chat ───────────────────────────────────────────
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         if (!plugin.isPluginActive() || !cfg().isEnableChat()) return;
+        
+        // Skip if message is empty
+        if (event.getMessage() == null || event.getMessage().trim().isEmpty()) return;
+        
         if (!flood().tryAcquire("chat")) return;
 
         Player player = event.getPlayer();
@@ -182,6 +189,34 @@ public class EventListener implements Listener {
         data().incrementStat("death_messages");
     }
 
+    // ─── Pet death ──────────────────────────────────────
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityDeath(EntityDeathEvent event) {
+        if (!plugin.isPluginActive() || !cfg().isEnablePetDeath()) return;
+        if (!(event.getEntity().getKiller() instanceof Player)) return;
+        if (!(event.getEntity() instanceof Tameable)) return;
+
+        Tameable pet = (Tameable) event.getEntity();
+        if (!pet.isTamed() || pet.getOwner() == null) return;
+
+        Player killer = event.getEntity().getKiller();
+        AnimalTamer owner = pet.getOwner();
+
+        // Don't log if owner is the killer
+        if (owner.getUniqueId().equals(killer.getUniqueId())) return;
+
+        if (!flood().tryAcquire("death")) return;
+
+        Map<String, String> ph = basePlayerPlaceholders(killer);
+        ph.put("%owner%", owner.getName() != null ? owner.getName() : "Unknown");
+        ph.put("%pet%", pet.getType().getName().toLowerCase().replace("_", " "));
+
+        String msg = MessageUtils.applyPlaceholders(cfg().getPetDeathMessage(), ph);
+        api().sendMessage(MessageUtils.stripColors(msg));
+        data().incrementStat("pet_death_messages");
+    }
+
     // ─── World change ───────────────────────────────────
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -208,8 +243,9 @@ public class EventListener implements Listener {
 
         String rawDisplay = MessageUtils.stripColors(player.getDisplayName());
         Map<String, String> replacements = cfg().getPrefixReplacements();
+        String origDisplay = rawDisplay;
         rawDisplay = MessageUtils.applyPrefixReplacements(rawDisplay, replacements);
-        ph.put("%displayname%", MessageUtils.escapeHtml(rawDisplay));
+        ph.put("%displayname%", rawDisplay.equals(origDisplay) ? MessageUtils.escapeHtml(rawDisplay) : rawDisplay);
 
         // Try Vault first (works with LuckPerms, PEX, etc.), fall back to display name extraction
         String prefix = getVaultPrefix(player);

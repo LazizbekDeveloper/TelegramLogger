@@ -65,6 +65,10 @@ public class ConfigManager {
     private boolean enableWorldSwitch = true;
     private String worldSwitchMessage = "<blockquote>\uD83C\uDF0D <b>%player%</b> moved: %from_world% \u2192 %to_world% (%online%/%max%)</blockquote>";
 
+    // Pet death
+    private boolean enablePetDeath = true;
+    private String petDeathMessage = "<blockquote>\uD83D\uDC3E <b>%player%</b> killed <b>%owner%</b>'s %pet%! (%online%/%max%)</blockquote>";
+
     // Chat filter
     private boolean enableChatFilter = true;
     private List<String> filteredWords = new ArrayList<>();
@@ -186,6 +190,9 @@ public class ConfigManager {
 
         enableWorldSwitch = cfg.getBoolean("enable_world_switch", true);
         worldSwitchMessage = cfg.getString("world_switch_message", worldSwitchMessage);
+
+        enablePetDeath = cfg.getBoolean("enable_pet_death", true);
+        petDeathMessage = cfg.getString("pet_death_message", petDeathMessage);
 
         enableChatFilter = cfg.getBoolean("enable_chat_filter", true);
         filteredWords = cfg.getStringList("filtered_words").stream()
@@ -390,6 +397,9 @@ public class ConfigManager {
 
     public boolean isEnableWorldSwitch() { return enableWorldSwitch; }
     public String getWorldSwitchMessage() { return worldSwitchMessage; }
+
+    public boolean isEnablePetDeath() { return enablePetDeath; }
+    public String getPetDeathMessage() { return petDeathMessage; }
 
     public boolean isEnableChatFilter() { return enableChatFilter; }
     public List<String> getFilteredWords() { return filteredWords; }

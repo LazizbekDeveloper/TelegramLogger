@@ -154,6 +154,27 @@ public class TelegramAPI {
     }
 
     /**
+     * Delete any existing webhook to allow getUpdates (polling).
+     * Blocks the calling thread.
+     */
+    public boolean deleteWebhook() {
+        String token = plugin.getConfigManager().getBotToken();
+        if (token == null || token.isEmpty() || token.equals("BOT_TOKEN")) return false;
+        try {
+            URL url = new URL("https://api.telegram.org/bot" + token + "/deleteWebhook");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            int code = conn.getResponseCode();
+            conn.disconnect();
+            return code == 200;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
      * Get a user's chat member status (blocking).
      */
     public String getChatMemberStatus(long userId) {

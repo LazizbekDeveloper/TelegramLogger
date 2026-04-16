@@ -18,7 +18,7 @@ public class DataManager {
         "total_messages", "join_messages", "leave_messages", "chat_messages",
         "advancement_messages", "death_messages", "world_switch_messages",
         "filtered_messages", "command_messages", "ignored_commands_count",
-        "first_join_messages", "server_start_count"
+        "first_join_messages", "server_start_count", "pet_death_messages"
     };
 
     private final File dataFile;
@@ -132,6 +132,7 @@ public class DataManager {
         statLabels.put("chat_messages", "&f&lChat");
         statLabels.put("advancement_messages", "&d&lAdvancement");
         statLabels.put("death_messages", "&4&lDeath");
+        statLabels.put("pet_death_messages", "&d&lPet Death");
         statLabels.put("world_switch_messages", "&b&lWorld Switch");
         statLabels.put("filtered_messages", "&6&lFiltered");
         statLabels.put("first_join_messages", "&a&lFirst Join");
@@ -174,6 +175,7 @@ public class DataManager {
             {"chat_messages", "\uD83D\uDCAC Chat", String.valueOf(getStat("chat_messages"))},
             {"advancement_messages", "\uD83C\uDFC6 Advancement", String.valueOf(getStat("advancement_messages"))},
             {"death_messages", "\uD83D\uDC80 Death", String.valueOf(getStat("death_messages"))},
+            {"pet_death_messages", "\uD83D\uDC3E Pet Death", String.valueOf(getStat("pet_death_messages"))},
             {"world_switch_messages", "\uD83C\uDF0D World Switch", String.valueOf(getStat("world_switch_messages"))},
             {"filtered_messages", "\uD83D\uDEAB Filtered", String.valueOf(getStat("filtered_messages"))},
             {"first_join_messages", "\uD83C\uDF1F First Join", String.valueOf(getStat("first_join_messages"))},
