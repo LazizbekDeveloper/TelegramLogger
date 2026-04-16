@@ -4,6 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -470,7 +472,9 @@ public class TelegramHandler {
                         String playerName = matcher.group(1);
                         Player mentionedPlayer = Bukkit.getPlayerExact(playerName);
                         if (mentionedPlayer != null && mentionedPlayer.isOnline()) {
-                            mentionedPlayers.add(mentionedPlayer);
+                            if (!mentionedPlayers.contains(mentionedPlayer)) {
+                                mentionedPlayers.add(mentionedPlayer);
+                            }
                             String highlightColor = cfg.getMentionHighlightColor();
                             matcher.appendReplacement(sb, highlightColor + "@" + playerName + "§r");
                         }
@@ -482,19 +486,30 @@ public class TelegramHandler {
                 formattedMessage = formattedMessage.replace("%message%", finalMessage);
                 formattedMessage = MessageUtils.colorize(formattedMessage);
 
-
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.sendMessage(formattedMessage);
                 }
 
-                if (cfg.isEnableMentionNotifications()) {
+                if (cfg.isEnableMentionNotifications() && !mentionedPlayers.isEmpty()) {
                     for (Player mentionedPlayer : mentionedPlayers) {
                         try {
                             // Sound
-                            mentionedPlayer.playSound(mentionedPlayer.getLocation(), org.bukkit.Sound.valueOf(cfg.getMentionSound()), 1.0f, 1.0f);
+                            mentionedPlayer.playSound(mentionedPlayer.getLocation(), 
+                                org.bukkit.Sound.valueOf(cfg.getMentionSound()), 
+                                cfg.getMentionVolume(), 
+                                cfg.getMentionPitch());
 
-                            // Title
-                            mentionedPlayer.sendTitle(MessageUtils.colorize(cfg.getMentionTitle()), "", 10, 20, 10);
+                            // Title & Subtitle
+                            String title = MessageUtils.colorize(cfg.getMentionTitle().replace("%name%", senderName));
+                            String subtitle = MessageUtils.colorize(cfg.getMentionSubtitle().replace("%name%", senderName));
+                            mentionedPlayer.sendTitle(title, subtitle, 
+                                cfg.getMentionTitleFadeIn(), 
+                                cfg.getMentionTitleStay(), 
+                                cfg.getMentionTitleFadeOut());
+
+                            // Actionbar
+                            String actionbar = MessageUtils.colorize(cfg.getMentionActionbar().replace("%name%", senderName));
+                            sendActionbar(mentionedPlayer, actionbar, cfg.getMentionActionbarDuration());
 
                             // BossBar
                             org.bukkit.boss.BossBar bossBar = Bukkit.createBossBar(
@@ -508,7 +523,7 @@ public class TelegramHandler {
                                 public void run() {
                                     bossBar.removePlayer(mentionedPlayer);
                                 }
-                            }.runTaskLater(plugin, 40L); // 2 seconds
+                            }.runTaskLater(plugin, (long) cfg.getMentionBossBarDuration());
 
                         } catch (Exception e) {
                             plugin.getLogger().warning("Failed to send mention notification to " + mentionedPlayer.getName() + ": " + e.getMessage());
@@ -519,5 +534,20 @@ public class TelegramHandler {
                 plugin.getLogger().info("[TG] " + senderName + ": " + message);
             }
         }.runTask(plugin);
+    }
+
+    private void sendActionbar(Player player, String message, int ticks) {
+        new BukkitRunnable() {
+            int elapsed = 0;
+            @Override
+            public void run() {
+                if (elapsed >= ticks || !player.isOnline()) {
+                    this.cancel();
+                    return;
+                }
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(message));
+                elapsed += 20;
+            }
+        }.runTaskTimer(plugin, 0L, 20L);
     }
 }

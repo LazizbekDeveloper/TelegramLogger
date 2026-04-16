@@ -158,13 +158,21 @@ version: "5.0.1"
 # ---------------------
 telegram_to_game_enhancements:
   # Relay messages sent from Telegram back to the same Telegram chat.
-  # This is useful for seeing a clean, formatted version of the message.
   enable_telegram_to_telegram_relay: true
   telegram_to_telegram_relay_format: "[TG] %name%: %message%"
 
-  # In-game notifications for @mentions
+  # In-game notifications for @mentions from Telegram
   enable_mention_notifications: true
   mention_sound: "BLOCK_NOTE_BLOCK_BELL"
+  mention_volume: 1.0
+  mention_pitch: 1.0
   mention_title: "&eYou were mentioned in chat!"
+  mention_subtitle: "&fBy &6%name%"
+  mention_title_fade_in: 10   # in ticks (20 ticks = 1 second)
+  mention_title_stay: 40
+  mention_title_fade_out: 10
+  mention_actionbar: "&e&l⭐ MENTIONED BY %name% ⭐"
+  mention_actionbar_duration: 60
   mention_boss_bar: "&eYou were mentioned by &f%name%"
+  mention_boss_bar_duration: 80
   mention_highlight_color: "&e" # Yellow

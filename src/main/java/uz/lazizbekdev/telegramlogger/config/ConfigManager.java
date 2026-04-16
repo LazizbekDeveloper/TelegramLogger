@@ -103,8 +103,17 @@ public class ConfigManager {
     private String telegramToTelegramRelayFormat = "[TG] %name%: %message%";
     private boolean enableMentionNotifications = true;
     private String mentionSound = "BLOCK_NOTE_BLOCK_BELL";
+    private float mentionVolume = 1.0f;
+    private float mentionPitch = 1.0f;
     private String mentionTitle = "&eYou were mentioned in chat!";
+    private String mentionSubtitle = "&fBy &6%name%";
+    private int mentionTitleFadeIn = 10;
+    private int mentionTitleStay = 40;
+    private int mentionTitleFadeOut = 10;
+    private String mentionActionbar = "&e&l⭐ MENTIONED BY %name% ⭐";
+    private int mentionActionbarDuration = 60;
     private String mentionBossBar = "&eYou were mentioned by &f%name%";
+    private int mentionBossBarDuration = 80;
     private String mentionHighlightColor = "&e";
 
 
@@ -230,8 +239,17 @@ public class ConfigManager {
         telegramToTelegramRelayFormat = cfg.getString("telegram_to_game_enhancements.telegram_to_telegram_relay_format", "[TG] %name%: %message%");
         enableMentionNotifications = cfg.getBoolean("telegram_to_game_enhancements.enable_mention_notifications", true);
         mentionSound = cfg.getString("telegram_to_game_enhancements.mention_sound", "BLOCK_NOTE_BLOCK_BELL");
+        mentionVolume = (float) cfg.getDouble("telegram_to_game_enhancements.mention_volume", 1.0);
+        mentionPitch = (float) cfg.getDouble("telegram_to_game_enhancements.mention_pitch", 1.0);
         mentionTitle = cfg.getString("telegram_to_game_enhancements.mention_title", "&eYou were mentioned in chat!");
+        mentionSubtitle = cfg.getString("telegram_to_game_enhancements.mention_subtitle", "&fBy &6%name%");
+        mentionTitleFadeIn = cfg.getInt("telegram_to_game_enhancements.mention_title_fade_in", 10);
+        mentionTitleStay = cfg.getInt("telegram_to_game_enhancements.mention_title_stay", 40);
+        mentionTitleFadeOut = cfg.getInt("telegram_to_game_enhancements.mention_title_fade_out", 10);
+        mentionActionbar = cfg.getString("telegram_to_game_enhancements.mention_actionbar", "&e&l⭐ MENTIONED BY %name% ⭐");
+        mentionActionbarDuration = cfg.getInt("telegram_to_game_enhancements.mention_actionbar_duration", 60);
         mentionBossBar = cfg.getString("telegram_to_game_enhancements.mention_boss_bar", "&eYou were mentioned by &f%name%");
+        mentionBossBarDuration = cfg.getInt("telegram_to_game_enhancements.mention_boss_bar_duration", 80);
         mentionHighlightColor = cfg.getString("telegram_to_game_enhancements.mention_highlight_color", "&e");
 
         configVersion = cfg.getString("version", TelegramLogger.PLUGIN_VERSION);
@@ -428,7 +446,16 @@ public class ConfigManager {
     public String getTelegramToTelegramRelayFormat() { return telegramToTelegramRelayFormat; }
     public boolean isEnableMentionNotifications() { return enableMentionNotifications; }
     public String getMentionSound() { return mentionSound; }
+    public float getMentionVolume() { return mentionVolume; }
+    public float getMentionPitch() { return mentionPitch; }
     public String getMentionTitle() { return mentionTitle; }
+    public String getMentionSubtitle() { return mentionSubtitle; }
+    public int getMentionTitleFadeIn() { return mentionTitleFadeIn; }
+    public int getMentionTitleStay() { return mentionTitleStay; }
+    public int getMentionTitleFadeOut() { return mentionTitleFadeOut; }
+    public String getMentionActionbar() { return mentionActionbar; }
+    public int getMentionActionbarDuration() { return mentionActionbarDuration; }
     public String getMentionBossBar() { return mentionBossBar; }
+    public int getMentionBossBarDuration() { return mentionBossBarDuration; }
     public String getMentionHighlightColor() { return mentionHighlightColor; }
 }
