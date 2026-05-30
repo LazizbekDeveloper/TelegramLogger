@@ -425,6 +425,8 @@ public class ConfigManager {
     public boolean isDebugMode() { return debugMode; }
     public void setDebugMode(boolean debug) { this.debugMode = debug; }
 
+    public String getServerName() { return serverName; }
+
     public String getPluginPrefix() { return MessageUtils.colorize(pluginPrefix); }
     public String getRawPluginPrefix() { return pluginPrefix; }
     public String getTelegramGameMessage() { return telegramGameMessage; }
@@ -495,4 +497,8 @@ public class ConfigManager {
     public String getMentionBossBar() { return mentionBossBar; }
     public int getMentionBossBarDuration() { return mentionBossBarDuration; }
     public String getMentionHighlightColor() { return mentionHighlightColor; }
+}
+}
+}
+}
 }

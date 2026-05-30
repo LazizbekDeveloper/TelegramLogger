@@ -12,11 +12,17 @@ send_to_thread: false                           # Send messages to a specific fo
 send_telegram_messages_to_game: false           # Forward Telegram admin messages to Minecraft chat
 
 # ---------------------
+# Server Identity
+# ---------------------
+server_name: "Lobby-1"                          # Custom name for this server (e.g. Lobby, Survival, KitPVP)
+# Use %server_name% placeholder in any message below.
+
+# ---------------------
 # Message Prefix
 # ---------------------
 plugin_prefix: "&6&lTelegramLogger&7 ➜ &r&a"
 telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"
-# Available placeholders: %name%, %message%
+# Available placeholders: %name%, %message%, %server_name%
 
 # ---------------------
 # Server Start/Stop
@@ -24,49 +30,49 @@ telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"
 enable_server_start_stop: true
 server_start_message: "<blockquote>🟢 <b>Server started!</b>\nVersion: %version% | Max Players: %max%</blockquote>"
 server_stop_message: "<blockquote>🔴 <b>Server stopped!</b></blockquote>"
-# Available placeholders: %version%, %max%
+# Available placeholders: %version%, %max%, %server_name%
 
 # ---------------------
 # Join Messages
 # ---------------------
 enable_join: true
 join_message: "<blockquote>➕ <b>%player%</b> joined the game! (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%, %server_name%
 
 # ---------------------
 # First Join (new players)
 # ---------------------
 enable_first_join: true
 first_join_message: "<blockquote>🌟 <b>%player%</b> joined for the first time! Welcome! (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%, %server_name%
 
 # ---------------------
 # Leave Messages
 # ---------------------
 enable_leave: true
 leave_message: "<blockquote>➖ <b>%player%</b> left the game! (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %online%, %max%, %server_name%
 
 # ---------------------
 # Chat Messages
 # ---------------------
 enable_chat: true
 chat_message: "💬 <b>%player%</b> ➥ %message%"
-# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %message%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %message%, %online%, %max%, %server_name%
 
 # ---------------------
 # Advancement Messages
 # ---------------------
 enable_advancement: true
 advancement_message: "<blockquote>🏆 <b>%player%</b> earned <b>[%advancement%]</b> (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %advancement%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %advancement%, %online%, %max%, %server_name%
 
 # ---------------------
 # Death Messages
 # ---------------------
 enable_death: true
 death_message: "<blockquote>💀 %death_message% (%online%/%max%)</blockquote>"
-# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %death_message%, %online%, %max%
+# Available placeholders: %player%, %displayname%, %prefix%, %suffix%, %death_message%, %online%, %max%, %server_name%
 
 # ---------------------
 # World Switch Messages

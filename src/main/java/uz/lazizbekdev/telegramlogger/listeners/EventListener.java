@@ -240,6 +240,7 @@ public class EventListener implements Listener {
     private Map<String, String> basePlayerPlaceholders(Player player) {
         Map<String, String> ph = new LinkedHashMap<>();
         ph.put("%player%", player.getName());
+        ph.put("%server_name%", cfg().getServerName());
 
         String rawDisplay = MessageUtils.stripColors(player.getDisplayName());
         Map<String, String> replacements = cfg().getPrefixReplacements();

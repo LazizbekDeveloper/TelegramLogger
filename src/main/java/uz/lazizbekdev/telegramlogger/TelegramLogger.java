@@ -122,7 +122,9 @@ public class TelegramLogger extends JavaPlugin {
      */
     private void sendShutdownMessage() {
         try {
-            String msg = MessageUtils.stripColors(configManager.getServerStopMessage());
+            String rawMsg = configManager.getServerStopMessage();
+            String msg = rawMsg.replace("%server_name%", configManager.getServerName());
+            msg = MessageUtils.stripColors(msg);
             String urlString = "https://api.telegram.org/bot" + configManager.getBotToken() + "/sendMessage";
             StringBuilder params = new StringBuilder();
             params.append("chat_id=").append(java.net.URLEncoder.encode(configManager.getChatId(), "UTF-8"));
