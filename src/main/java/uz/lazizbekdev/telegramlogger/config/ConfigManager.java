@@ -30,6 +30,9 @@ public class ConfigManager {
     private boolean sendTelegramMessagesToGame = false;
     private boolean debugMode = false;
 
+    // Server Identity
+    private String serverName = "Server";
+
     // Prefix & format
     private String pluginPrefix = "&6&lTelegramLogger&7 \u279C &r&a";
     private String telegramGameMessage = "&7[&9TG&7] &c%name% &8\u00BB &f%message%";
@@ -189,6 +192,8 @@ public class ConfigManager {
         sendToThread = cfg.getBoolean("send_to_thread", false);
         sendTelegramMessagesToGame = cfg.getBoolean("send_telegram_messages_to_game", false);
         debugMode = cfg.getBoolean("debug_mode", false);
+
+        serverName = cfg.getString("server_name", "Server");
 
         pluginPrefix = cfg.getString("plugin_prefix", pluginPrefix);
         telegramGameMessage = cfg.getString("telegram_game_message", telegramGameMessage);
@@ -497,8 +502,4 @@ public class ConfigManager {
     public String getMentionBossBar() { return mentionBossBar; }
     public int getMentionBossBarDuration() { return mentionBossBarDuration; }
     public String getMentionHighlightColor() { return mentionHighlightColor; }
-}
-}
-}
-}
 }
