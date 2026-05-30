@@ -822,6 +822,8 @@ thread_id: "THREAD_ID"
 send_to_thread: false
 send_telegram_messages_to_game: false
 
+server_name: "Lobby-1"
+
 plugin_prefix: "&6&lTelegramLogger&7 ➜ &r&a"
 telegram_game_message: "&7[&9TG&7] &c%name% &8» &f%message%"
 
@@ -941,4 +943,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
   <b>Made with ❤️ by <a href="https://t.me/LazizbekDev">LazizbekDev</a></b>
   <br><br>
   If you find this plugin helpful, please give it a ⭐ on GitHub!
+</div>
+l, please give it a ⭐ on GitHub!
 </div>
